@@ -1,0 +1,3 @@
+/home/keepersam02/CLionProjects/PhotoProcessor/cmake-build-debug/CMakeFiles/PhotoProcessor.dir
+/home/keepersam02/CLionProjects/PhotoProcessor/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/keepersam02/CLionProjects/PhotoProcessor/cmake-build-debug/CMakeFiles/rebuild_cache.dir
