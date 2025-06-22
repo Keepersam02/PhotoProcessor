@@ -1,0 +1,62 @@
+//
+// Created by keepersam02 on 6/21/25.
+//
+
+#include "import.h"
+#include "libraw/libraw.h"
+
+
+int openFile(char* path, libraw_data_t* rawReader) {
+    int res = libraw_open_file(rawReader, path);
+    if (res != 0) {
+        return -1;
+    }
+    return 0;
+}
+
+bool valid_image(char* path) {
+    FILE *file = fopen(path, "rb");
+    if (file == NULL) {
+        fclose(file);
+        return false;
+    }
+
+    uint8_t buffer[16];
+    size_t bytesRead = fread(buffer, 1, 16, file);
+    buffer[15] = '\0';
+    fclose(file);
+    if (bytesRead != 16) {
+        printf("Could not read image header");
+        return 0;
+    }
+    uint8_t magicNum[16] = {'F', 'U', 'J', 'I', 'F', 'I', 'L', 'M', 'C', 'C', 'D', '-', 'R', 'A', 'W', '\0'};
+    printf("%s\n", buffer);
+    printf("%s\n", magicNum);
+    for (int i = 0;i < 15;i++) {
+        if (buffer[i] != magicNum[i]) {
+            printf("Non matching at index %i\n", i);
+            return false;
+        }
+    }
+    return true;
+}
+
+int ReadImageData16(libraw_processed_image_t** img, libraw_data_t* rawProc) {
+    rawProc->params.gamm[0] = 0;
+    rawProc->params.gamm[1] = 1;
+
+    rawProc->params.use_camera_wb = 1;
+    rawProc->params.use_fuji_rotate = 1;
+    rawProc->params.output_bps = 16;
+    rawProc->params.user_qual = 10;
+    rawProc->params.no_auto_bright = 1;
+
+    int res = libraw_unpack(rawProc);
+    if (res != 0) {
+        printf("Problem processing image.");
+        return -1;
+    }
+    libraw_dcraw_process(rawProc);
+    *img = libraw_dcraw_make_mem_image(rawProc, &res);
+    return 0;
+}
