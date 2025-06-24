@@ -4,28 +4,24 @@
 
 #include "bmpWrite.h"
 
-#pragma pack(push, 1)
-typedef struct {
-    unsigned short  identifier;
-    unsigned long   size;
-    unsigned short  reserved1;
-    unsigned short  reserved2;
-    unsigned long   offset;
-}bmpHeader;
+#include <stdio.h>
 
-typedef struct {
-    unsigned int   size;            // Header size in bytes (40)
-    int            width;           // Width of the image
-    int            height;          // Height of the image
-    unsigned short planes;          // Number of color planes
-    unsigned short bitCount;        // Bits per pixel
-    unsigned int   compression;     // Compression type
-    unsigned int   imageSize;       // Image size in bytes
-    int            xPixelsPerMeter; // Pixels per meter in x axis
-    int            yPixelsPerMeter; // Pixels per meter in y axis
-    unsigned int   colorsUsed;      // Number of colors used
-    unsigned int   colorsImportant; // Number of important colors
-} BmpInfoHeader;
-#pragma pack(pop)
-
-
+/*int writeHeader(char* filepath, bmpHeader* genHead, BmpInfoHeader* infHeader) {
+    if (filepath == NULL || genHead == NULL || infHeader == NULL) {
+        printf("Passes null pointer to write bmp header");
+        return 0;
+    }
+    FILE* newBmp = fopen(filepath, "wb");
+    size_t written = fwrite(genHead, sizeof bmpHeader, 1, newBmp);
+    if (written != sizeof bmpHeader) {
+        printf("Error writing bmp header.");
+        return -1;
+    }
+    written = fwrite(infHeader, sizeof BmpInfoHeader, 1, newBmp);
+    if (written != sizeof BmpInfoHeader) {
+        printf("Error writing info header");
+        return -1;
+    }
+    fclose(newBmp);
+    return 0;
+}*/

@@ -4,6 +4,7 @@
 
 #include "import.h"
 #include "libraw/libraw.h"
+#include <libraw/libraw_version.h>
 
 
 int openFile(char* path, libraw_data_t* rawReader) {
@@ -16,10 +17,11 @@ int openFile(char* path, libraw_data_t* rawReader) {
 
 bool valid_image(char* path) {
     FILE *file = fopen(path, "rb");
-    if (file == NULL) {
+    if (!file) {
         fclose(file);
         return false;
     }
+    printf("File exists\n");
 
     uint8_t buffer[16];
     size_t bytesRead = fread(buffer, 1, 16, file);
@@ -42,7 +44,7 @@ bool valid_image(char* path) {
 }
 
 int ReadImageData16(libraw_processed_image_t** img, libraw_data_t* rawProc) {
-    rawProc->params.gamm[0] = 0;
+    rawProc->params.gamm[0] = 1;
     rawProc->params.gamm[1] = 1;
 
     rawProc->params.use_camera_wb = 1;
@@ -50,6 +52,7 @@ int ReadImageData16(libraw_processed_image_t** img, libraw_data_t* rawProc) {
     rawProc->params.output_bps = 16;
     rawProc->params.user_qual = 10;
     rawProc->params.no_auto_bright = 1;
+    rawProc->params.output_color = 5;
 
     int res = libraw_unpack(rawProc);
     if (res != 0) {
