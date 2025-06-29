@@ -4,9 +4,40 @@
 #include "file_handling/import.h"
 #include "file_handling/bmpWrite.h"
 #include "file_handling/writeTiff.h"
+#include "lut-handle/lutParse.h"
 
 int main(void) {
-   char dirPath[50] = {0};
+   char filepath[200];
+   printf("Path to LUT\n");
+   fgets(filepath, sizeof filepath, stdin);
+   filepath[strcspn(filepath, "\n")] = '\0';
+   printf("%s\n", filepath);
+
+   char* lutDat[70];
+   int res = loadLUT(filepath, &lutDat);
+   if (res != 0) {
+      printf("Error loading LUT data: %i", res);
+      exit(1);
+   }
+   char* title;
+   res = parseLUTTitle(lutDat, &title);
+   if (res != 0) {
+      printf("Could not parse lut title: %i\n", res);
+      exit(1);
+   }
+   if (!title) {
+      printf("Could not parse title\n");
+      exit(1);
+   }
+   printf("Title: %s\n", title);
+   int lutSize;
+   res = parseLUTSize(lutDat, &lutSize);
+   if (res != 0) {
+      printf("Could not parse lut size.");
+      exit(1);
+   }
+   printf("LUT Size: %i\n", lutSize);
+   /*char dirPath[50] = {0};
    printf("Please enter directory path\n");
    fgets(dirPath, sizeof dirPath, stdin);
    dirPath[strcspn(dirPath, "\n")] = '\0';
@@ -20,7 +51,7 @@ int main(void) {
    while (rd = readdir(dir)) {
       printf("%s\n", rd->d_name);
    }
-   closedir(dir);
+   closedir(dir);*/
    exit(0);
 }
 
