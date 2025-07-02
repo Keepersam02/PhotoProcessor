@@ -9,6 +9,8 @@
 #include <inttypes.h>
 #include <string.h>
 
+
+
 int loadLUT(char* filepath, char** lutData) {
     if (!filepath) {
         printf("Invalid filepath pointer\n");
@@ -34,63 +36,78 @@ int loadLUT(char* filepath, char** lutData) {
     return 0;
 }
 
-int splitLUTData(char* lutData, char* splDat[70]) {
-    char* datCpy = strdup(lutData);
+int splitLUTData(char* lutData, char *splDat[274630]) {
+    char* og = strdup(lutData);
+    char* datCpy = og;
     if (!datCpy) {
         return -1;
     }
     char* curLine = strtok(datCpy, "\r\n");
     int i = 0;
     while (curLine != NULL) {
-        splDat[i] = curLine;
-        curLine = strtok(datCpy, "\r\n");
+        splDat[i] = strdup(curLine);
+        curLine = strtok(NULL, "\r\n");
         i++;
-        if (i >= 70) {
+        if (i >= 274630) {
+            free(og);
             printf("LUT file too long.\n Only enter 65 point or smaller LUTS\n");
             return -1;
         }
     }
+    free(og);
     return 0;
 }
 
-int parseLUTTitle(char* splDat[70], char** title) {
-    char* titleStr = NULL;
-    strcpy(titleStr, splDat[0]);
+int parseLUTTitle(char *splDat[274630], char** title) {
+    char* og = strdup(splDat[0]);
+    char* titleStr = og;
     titleStr = strtok(titleStr, "\"");
     if (titleStr == NULL) {
         printf("Could not find title.");
         return -1;
     }
     titleStr = strtok(NULL, "\"");
-    if (titleStr== NULL) {
+    if (titleStr == NULL) {
         printf("Could not find title\n");
         return -1;
     }
     *title = titleStr;
+    free(og);
     return 0;
 }
 
-int parseLUTSize(char* splDat[70], int* size) {
-    char* sizeStr = splDat[1];
-    char curChar = *sizeStr;
-    int i = 0;
-    while (1) {
-        if (curChar == '\0' || curChar == '\n') {
-            printf("Could not find lut size\n");
-            return -1;
-        }
-        char* endptr;
-        long int sizeL = strtol((sizeStr + i), &endptr, 10);
-        if (*endptr != curChar) {
-            *size = sizeL;
-            return 0;
-        }
-        i++;
-        curChar = *(sizeStr + i);
-    }
+int parseLUTSize(char *splDat[274630], int* size) {
+    char* og = strdup(splDat[1]);
+    char* token = og;
+    token = strtok(token, " ");
+    token = strtok(NULL, " ");
+
+    *size = strtol(token, NULL, 10);
+    free(og);
+    return 0;
 }
 
-int parseLUTData65(char* lutData, float red[65], float green[65], float blue[65]) {
-    strtok(lutData, "\r\n");
+int parseLUTData65(char *splDat[274630], double data[274625]) {
+    char* og;
+    int datIn = 0;
+    double tempD;
+    for (int i = 2;i < 274627;i++) {
+        og = strdup(splDat[i]);
+        char* temp = og;
+        temp = strtok(og, " ");
+        tempD = atof(temp);
+        data[datIn] = tempD;
+        datIn++;
+        temp = strtok(NULL, " ");
+        tempD = atof(temp);
+        data[datIn] = tempD;
+        datIn++;
+        temp = strtok(NULL, " ");
+        tempD = atof(temp);
+        data[datIn] = tempD;
+        datIn++;
+        free(og);
+    }
+    printf("%i\n", datIn);
     return 0;
 }

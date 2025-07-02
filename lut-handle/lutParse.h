@@ -6,8 +6,9 @@
 #define LUTPARSE_H
 
 int loadLUT(char* filepath, char** lutData);
-int parseLUTSize(char* splDat[70], int* size);
-int parseLUTTitle(char* splDat[70], char** title);
-int parseLUTData65(char* lutData, float red[65], float green[65], float blue[65]);
+int splitLUTData(char* lutData, char *splDat[274630]);
+int parseLUTTitle(char *splDat[274630], char** title);
+int parseLUTSize(char *splDat[274630], int* size);
+int parseLUTData65(char *splDat[274630], double data[274625]);
 
 #endif //LUTPARSE_H
