@@ -23,7 +23,7 @@ bool valid_image(char* path) {
     }
     printf("File exists\n");
 
-    uint8_t buffer[16];
+    char buffer[16];
     size_t bytesRead = fread(buffer, 1, 16, file);
     buffer[15] = '\0';
     fclose(file);
@@ -31,7 +31,7 @@ bool valid_image(char* path) {
         printf("Could not read image header");
         return 0;
     }
-    uint8_t magicNum[16] = {'F', 'U', 'J', 'I', 'F', 'I', 'L', 'M', 'C', 'C', 'D', '-', 'R', 'A', 'W', '\0'};
+    char magicNum[16] = {'F', 'U', 'J', 'I', 'F', 'I', 'L', 'M', 'C', 'C', 'D', '-', 'R', 'A', 'W', '\0'};
     printf("%s\n", buffer);
     printf("%s\n", magicNum);
     for (int i = 0;i < 15;i++) {
@@ -63,3 +63,41 @@ int ReadImageData16(libraw_processed_image_t** img, libraw_data_t* rawProc) {
     *img = libraw_dcraw_make_mem_image(rawProc, &res);
     return 0;
 }
+
+int createIntermediateImage(libraw_processed_image_t* img, intermediateImage* interIm) {
+    if (!interIm) {
+        interIm = malloc(sizeof(intermediateImage));
+    }
+    if (!img) {
+        free(interIm);
+        return -1;
+    }
+    interIm->bits = img->bits;
+    interIm->colors = img->colors;
+    interIm->height = img->height;
+    interIm->width = img->width;
+    interIm->dataSize = img->data_size;
+    interIm->gamma = 1;
+    double* normData = malloc(sizeof(double) * interIm->dataSize);
+    int res = normalizeImage(img->data, img->data_size, normData);
+    if (res != 0) {
+        free(normData);
+        free(interIm);
+        return -1;
+    }
+    interIm->data = normData;
+    return 0;
+}
+
+int normalizeImage(char* dataIn, unsigned int size, double* normIm) {
+    if (!dataIn || !normIm) {
+        return -1;
+    }
+    uint16_t cur;
+    for (int i = 0; i < size; i++) {
+        memcpy(&cur, dataIn + i, sizeof(uint16_t));
+        *(normIm + i) = (double)cur / 65535;
+    }
+    return 0;
+}
+
