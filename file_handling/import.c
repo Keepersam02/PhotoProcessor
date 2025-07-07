@@ -4,8 +4,31 @@
 
 #include "import.h"
 #include "libraw/libraw.h"
+#include <sys/stat.h>
 #include <libraw/libraw_version.h>
 
+typedef enum {
+    DIRECTORY = 0,
+    REGULARFILE = 1,
+
+}fileTypes;
+
+int fileType(char* path) {
+    struct stat statbuf;
+    if (stat(path, &statbuf) != 0) {
+        return -1;
+    }
+    int res = S_ISDIR(statbuf.st_mode);
+    if (S_ISDIR(statbuf.st_mode) == 0) {
+        return DIRECTORY;
+    }
+    if (S_ISREG(statbuf.st_mode) == 0) {
+        return REGULARFILE;
+    }
+    return -2;
+}
+
+int openDir(char* path, )
 
 int openFile(char* path, libraw_data_t* rawReader) {
     int res = libraw_open_file(rawReader, path);
@@ -64,14 +87,11 @@ int ReadImageData16(libraw_processed_image_t** img, libraw_data_t* rawProc) {
     return 0;
 }
 
-int createIntermediateImage(libraw_processed_image_t* img, intermediateImage* interIm) {
-    if (!interIm) {
-        interIm = malloc(sizeof(intermediateImage));
-    }
+int createIntermediateImage(libraw_processed_image_t* img, void** interImP) {
     if (!img) {
-        free(interIm);
         return -1;
     }
+    intermediateImage* interIm = malloc(sizeof(intermediateImage));
     interIm->bits = img->bits;
     interIm->colors = img->colors;
     interIm->height = img->height;
@@ -86,6 +106,7 @@ int createIntermediateImage(libraw_processed_image_t* img, intermediateImage* in
         return -1;
     }
     interIm->data = normData;
+    *interImP = interIm;
     return 0;
 }
 
@@ -95,7 +116,7 @@ int normalizeImage(char* dataIn, unsigned int size, double* normIm) {
     }
     uint16_t cur;
     for (int i = 0; i < size; i++) {
-        memcpy(&cur, dataIn + i, sizeof(uint16_t));
+        memcpy(&cur, dataIn + (i * 2), sizeof(uint16_t));
         *(normIm + i) = (double)cur / 65535;
     }
     return 0;
