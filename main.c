@@ -5,88 +5,57 @@
 #include "file_handling/bmpWrite.h"
 #include "file_handling/writeTiff.h"
 #include "lut-handle/lutParse.h"
+#include "data_structures/imageVector.h"
+#include "color_management/CSTApp.h"
+#include "tiff.h"
 
 int main(void) {
-   char filepath[200];
-   printf("Path to LUT\n");
-   fgets(filepath, sizeof filepath, stdin);
-   filepath[strcspn(filepath, "\n")] = '\0';
-   printf("%s\n", filepath);
+   char lutPath[300] = {"/home/keepersam/Downloads/DSCF9791.RAF"};
+   char* lutDat;
+   int lutRes = loadLUT(lutPath, &lutDat);
+   char splitData[274630];
+   lutRes = splitLUTData(lutDat, splitData);
+//   int testRes = testNormalizeImage();
+   char filePathIn[300] = {"/home/keepersam/Downloads/DSCF9791.RAF"};
+   printf("Enter filepath\n");
+   //fgets(filePathIn, 300, stdin);
+   filePathIn[strcspn(filePathIn, "\n")] = 0;
 
-   char* lutDat[70];
-   int res = loadLUT(filepath, &lutDat);
-   if (res != 0) {
-      printf("Error loading LUT data: %i", res);
-      exit(1);
-   }
-   char* title;
-   res = parseLUTTitle(lutDat, &title);
-   if (res != 0) {
-      printf("Could not parse lut title: %i\n", res);
-      exit(1);
-   }
-   if (!title) {
-      printf("Could not parse title\n");
-      exit(1);
-   }
-   printf("Title: %s\n", title);
-   int lutSize;
-   res = parseLUTSize(lutDat, &lutSize);
-   if (res != 0) {
-      printf("Could not parse lut size.");
-      exit(1);
-   }
-   printf("LUT Size: %i\n", lutSize);
-   /*char dirPath[50] = {0};
-   printf("Please enter directory path\n");
-   fgets(dirPath, sizeof dirPath, stdin);
-   dirPath[strcspn(dirPath, "\n")] = '\0';
-   printf("%50s", dirPath);
-   DIR* dir = opendir(dirPath);
-   if (!dir) {
-      perror("Error opening dir");
-      exit(1);
-   }
-   struct dirent* rd;
-   while (rd = readdir(dir)) {
-      printf("%s\n", rd->d_name);
-   }
-   closedir(dir);*/
-   exit(0);
-}
-
-/*char filePath[50];
-   printf("Please enter path to file\n");
-
-   fgets(filePath, sizeof filePath, stdin);
-   filePath[strcspn(filePath, "\n")] = 0;
-
-   if (!valid_image(filePath)) {
+   if (!valid_image(filePathIn)) {
       exit(1);
    }
    libraw_data_t* rawProc = libraw_init(0);
-   int res = openFile(filePath, rawProc);
+   int res = openFile(filePathIn, rawProc);
    if (res != 0) {
-      printf("error opening file\n");
+      exit(1);
+   }
+   libraw_processed_image_t* proccessedImage = NULL;
+   res = ReadImageData16(&proccessedImage, rawProc);
+   if (res != 0 || !proccessedImage) {
+      exit(1);
+   }
+   libraw_dcraw_ppm_tiff_writer(rawProc, "/home/keepersam/Downloads/testlib.tiff");
+   void* interImPtr;
+   res = createIntermediateImage(proccessedImage, &interImPtr);
+   intermediateImage* interIm = (intermediateImage*)interImPtr;
+   if (!interIm || res != 0) {
       exit(1);
    }
 
-   libraw_processed_image_t* img = NULL;
-   res = ReadImageData16(&img, rawProc);
-   if (res != 0 || img == NULL) {
-      printf("Error reading raw image.");
+   char outPath[300] = {"/home/keepersam/Downloads/test1.tiff"};
+   printf("Enter out path for image\n");
+   //fgets(outPath, 300, stdin);
+
+   outPath[strcspn(outPath, "\n")] = 0;
+   res = writeProcTiff(outPath, interIm, rawProc);
+
+   double DWGMat[9] = {1.51667204, -.28147805, -.14696363, -.46491710, 1.25142378, .17488461,.06484905, .10913934,.76141462};
+   res = procImage(interIm, DWGMat);
+   if (res != 0) {
       exit(1);
    }
-
-   printf("%d\n", img->height);
-
-   char exitPath[50];
-   printf("Please enter a new file path for export\n");
-   fgets(exitPath, sizeof exitPath, stdin);
-   exitPath[strcspn(exitPath, "\n")];
-   /*res = writeTiff(exitPath, rawProc, img, img->data);
-   if (res != 0) {
-      printf("Error writing tiff");
-      exit(1);
-   }#1#
-   res = libraw_dcraw_ppm_tiff_writer(rawProc, exitPath);*/
+   char outPath2[300] = {"/home/keepersam/Downloads/test2.tiff"};
+   outPath2[strcspn(outPath2, "\n")] = 0;
+   res = writeProcTiff(outPath2, interIm, rawProc);
+   exit(0);
+}
