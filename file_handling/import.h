@@ -20,5 +20,7 @@ int ReadImageData16(libraw_processed_image_t** img, libraw_data_t* rawProc);
 int normalizeImage(char* dataIn, unsigned int size, double* normIm);
 int createIntermediateImage(libraw_processed_image_t* img, void** interImP);
 int normalizeImage(char* dataIn, unsigned int size, double* normIm);
+int testNormalizeImage();
+
 
 #endif //IMPORT_H
