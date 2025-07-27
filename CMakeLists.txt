@@ -3,6 +3,8 @@ project(PhotoProcessor C)
 
 set(CMAKE_C_STANDARD 23)
 
+find_library(MATH_LIBRARY m)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LibTiff REQUIRED libtiff-4)
 pkg_check_modules(LibRaw REQUIRED libraw)
@@ -24,6 +26,10 @@ add_executable(PhotoProcessor main.c
         color_management/CSTApp.c
         color_management/CSTApp.h
         file_handling/writeTiff.c
+        color_management/gamma_transform.c
+        color_management/gamma_transform.h
 )
 
-target_link_libraries(PhotoProcessor ${LibRaw_LIBRARIES} ${LibTiff_LIBRARIES})
+target_link_libraries(PhotoProcessor ${LibRaw_LIBRARIES} ${LibTiff_LIBRARIES} ${MATH_LIBRARY})
+
+add_compile_options(-03)

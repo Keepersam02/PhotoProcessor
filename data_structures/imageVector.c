@@ -136,7 +136,7 @@ int imVecToString(imageVector* imgVec, char string[1000]) {
 
     for (int i = 0; i < imgVec->size;i++) {
         char interImCur[100];
-        sprintf(interImCur, "Hieght: %d, Width: %d\nBits: %d, Colors: %i, Gamma: %i\nData size: %i\n", imgVec->img[i].height, imgVec->img[i].width
+        sprintf(interImCur, "Hieght: %d, Width: %d\nBits: %d, Colors: %i, Gamma: %f\nData size: %i\n", imgVec->img[i].height, imgVec->img[i].width
             ,imgVec->img[i].bits, imgVec->img[i].colors, imgVec->img[i].gamma, imgVec->img[i].dataSize);
         strcat(string, interImCur);
     }

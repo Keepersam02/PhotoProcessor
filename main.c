@@ -8,6 +8,8 @@
 #include "data_structures/imageVector.h"
 #include "color_management/CSTApp.h"
 #include "tiff.h"
+#include "color_management/gamma_transform.h"
+#include "lut-handle/lutApp.h"
 
 int main(void) {
    char lutPath[300] = {"/home/keepersam/Downloads/DSCF9791.RAF"};
@@ -15,6 +17,12 @@ int main(void) {
    int lutRes = loadLUT(lutPath, &lutDat);
    char splitData[274630];
    lutRes = splitLUTData(lutDat, splitData);
+   if (lutRes != 0) {
+      exit(1);
+   }
+   double lut_data[274625];
+   lutRes = parseLUTData65(splitData, lut_data);
+
 //   int testRes = testNormalizeImage();
    char filePathIn[300] = {"/home/keepersam/Downloads/DSCF9791.RAF"};
    printf("Enter filepath\n");
@@ -54,8 +62,18 @@ int main(void) {
    if (res != 0) {
       exit(1);
    }
+   res = davinci_inter_forward(interIm);
+   if (res != 0) {
+      exit(1);
+   }
    char outPath2[300] = {"/home/keepersam/Downloads/test2.tiff"};
    outPath2[strcspn(outPath2, "\n")] = 0;
    res = writeProcTiff(outPath2, interIm, rawProc);
+   res = applyIm65(&interIm->data, interIm->dataSize, lut_data);
+   if (res != 0) {
+      exit(1);
+   }
+   char outPath3[300] = "/home/keepersam/Documents/01-PhotoProcessor-Assets/02-Media/02-Export";
+   res = writeProcTiff(outPath3, interIm, rawProc);
    exit(0);
 }

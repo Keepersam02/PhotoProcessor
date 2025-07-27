@@ -1,0 +1,3 @@
+/home/keepersam/Desktop/Coding-Projects/PhotoProcessor/cmake-build-release/CMakeFiles/PhotoProcessor.dir
+/home/keepersam/Desktop/Coding-Projects/PhotoProcessor/cmake-build-release/CMakeFiles/edit_cache.dir
+/home/keepersam/Desktop/Coding-Projects/PhotoProcessor/cmake-build-release/CMakeFiles/rebuild_cache.dir

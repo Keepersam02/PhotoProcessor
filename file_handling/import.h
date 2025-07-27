@@ -9,7 +9,8 @@
 
 typedef struct {
     ushort height, width;
-    ushort bits, colors, gamma;
+    ushort bits, colors;
+    double gamma;
     unsigned int dataSize;
     double* data;
 }intermediateImage;

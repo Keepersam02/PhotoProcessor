@@ -39,7 +39,7 @@ int openFile(char* path, libraw_data_t* rawReader) {
 bool valid_image(char* path) {
     FILE *file = fopen(path, "rb");
     if (!file) {
-        fclose(file);
+        //fclose(file);
         return false;
     }
     printf("File exists\n");
