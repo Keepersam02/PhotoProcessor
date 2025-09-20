@@ -2,7 +2,7 @@
 // Created by keepersam on 7/7/25.
 //
 
-#include "imageVector.h"
+#include "image_slice.h"
 
 #include <stdlib.h>
 
