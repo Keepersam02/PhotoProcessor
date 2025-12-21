@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/bpp_app.dir/main.cpp.o -o bpp_app  -Wl,-rpath,/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/src:/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/lib ../src/libbpp_lib.so -Wl,-rpath-link,/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/lib 

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/bpp_debug.dir/main.cpp.o -o bpp_debug  -Wl,-rpath,/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/lib lib/libexiv2.so.0.28.7 -lraw -lstdc++ -llcms2 

@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "_deps/exiv2-build/xmpsdk",
+		"source" : "build/_deps/exiv2-src/xmpsdk"
+	}
+}

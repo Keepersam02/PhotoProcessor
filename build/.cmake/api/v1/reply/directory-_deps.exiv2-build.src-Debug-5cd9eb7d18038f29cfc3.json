@@ -1,0 +1,163 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"build/_deps/exiv2-src/src/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 285,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 294,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 300,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 305,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/libexiv2.so.0.28.7",
+				"lib/libexiv2.so.28"
+			],
+			"targetId" : "exiv2lib::@e9b633eaf976f715df09",
+			"targetIndex" : 33,
+			"targetInstallNamelink" : "skip",
+			"type" : "target"
+		},
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/libexiv2.so"
+			],
+			"targetId" : "exiv2lib::@e9b633eaf976f715df09",
+			"targetIndex" : 33,
+			"targetInstallNamelink" : "only",
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "include/exiv2",
+			"paths" : 
+			[
+				"build/_deps/exiv2-src/src/../include/exiv2/basicio.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/bmffimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/bmpimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/config.h",
+				"build/_deps/exiv2-src/src/../include/exiv2/convert.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/cr2image.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/crwimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/datasets.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/easyaccess.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/epsimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/error.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/exif.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/exiv2.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/futils.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/gifimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/image.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/image_types.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/iptc.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/jp2image.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/jpgimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/metadatum.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/mrwimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/orfimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/pgfimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/photoshop.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/preview.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/properties.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/psdimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/rafimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/rw2image.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/slice.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/tags.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/tgaimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/tiffimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/types.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/value.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/version.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/webpimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/xmp_exiv2.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/xmpsidecar.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/pngimage.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/asfvideo.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/matroskavideo.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/quicktimevideo.hpp",
+				"build/_deps/exiv2-src/src/../include/exiv2/riffvideo.hpp",
+				"build/exv_conf.h",
+				"build/exiv2lib_export.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/exiv2",
+			"exportName" : "exiv2Targets",
+			"exportTargets" : 
+			[
+				{
+					"id" : "exiv2lib::@e9b633eaf976f715df09",
+					"index" : 33
+				}
+			],
+			"paths" : 
+			[
+				"_deps/exiv2-build/src/CMakeFiles/Export/7c214f9ecc114891e0d2d508bbbeac60/exiv2Targets.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/exiv2",
+			"paths" : 
+			[
+				"build/_deps/exiv2-build/src/exiv2ConfigVersion.cmake",
+				"build/_deps/exiv2-build/src/exiv2Config.cmake"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "_deps/exiv2-build/src",
+		"source" : "build/_deps/exiv2-src/src"
+	}
+}
