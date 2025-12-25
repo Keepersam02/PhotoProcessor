@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -g -shared -Wl,-soname,libbpp_lib.so -o libbpp_lib.so CMakeFiles/bpp_lib.dir/temp.cpp.o  -Wl,-rpath,/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/lib -lraw_r -lstdc++ -llcms2 ../lib/libexiv2.so.0.28.7 

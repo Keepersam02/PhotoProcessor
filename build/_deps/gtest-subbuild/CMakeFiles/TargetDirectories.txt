@@ -1,3 +1,0 @@
-/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/_deps/gtest-subbuild/CMakeFiles/gtest-populate.dir
-/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/_deps/gtest-subbuild/CMakeFiles/edit_cache.dir
-/home/keepersam02/coding_projects/02-personal/batch_photo_processor/build/_deps/gtest-subbuild/CMakeFiles/rebuild_cache.dir
