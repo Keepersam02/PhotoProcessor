@@ -1,5 +1,5 @@
 add_executable(bpp_tests
-  main_test.cpp
+  ./io_tests/image_io_test.cpp
 )
 
 include(FetchContent)
