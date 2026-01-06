@@ -17,6 +17,13 @@ target_include_directories(bpp_lib PUBLIC
 )
 
 include(FetchContent)
+
+FetchContent_Declare(
+  zlib
+  URL https://zlib.net/zlib131.zip
+)
+FetchContent_MakeAvailable(zlib)
+
 FetchContent_Declare(
   exiv2
   URL https://github.com/Exiv2/exiv2/archive/refs/tags/v0.28.7.zip
@@ -31,11 +38,6 @@ FetchContent_MakeAvailable(libtiff)
 
 find_package(JPEG REQUIRED)
 
-FetchContent_Declare(
-  zlib
-  URL https://zlib.net/zlib131.zip
-)
-FetchContent_MakeAvailable(zlib)
 
 FetchContent_Declare(
   libpng
