@@ -19,6 +19,7 @@ target_include_directories(bpp_lib PUBLIC
 include(FetchContent)
 
 # Fetch zlib first (dependency for libpng and libtiff)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_Declare(
   zlib
   URL https://zlib.net/zlib131.zip
