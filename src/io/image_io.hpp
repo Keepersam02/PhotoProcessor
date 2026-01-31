@@ -10,8 +10,9 @@ enum image_type {
   UNSUPPORTED_IMAGE,
   NOT_IMAGE,
   FILE_DOES_NOT_EXIST,
-  FILE_EXIST
+  FILE_EXIST,
+  ERROR
 };
 
-image_type valid_file(std::string path);
-image_type supported_image(std::string path);
+image_type image_format(std::string path);
+image_type is_raw_tiff(std::string path);

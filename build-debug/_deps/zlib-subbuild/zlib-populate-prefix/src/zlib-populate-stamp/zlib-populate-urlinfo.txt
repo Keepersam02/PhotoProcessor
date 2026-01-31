@@ -1,0 +1,12 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=url
+command=/usr/bin/cmake;-P;/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/zlib-subbuild/zlib-populate-prefix/src/zlib-populate-stamp/download-zlib-populate.cmake;COMMAND;/usr/bin/cmake;-P;/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/zlib-subbuild/zlib-populate-prefix/src/zlib-populate-stamp/verify-zlib-populate.cmake;COMMAND;/usr/bin/cmake;-P;/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/zlib-subbuild/zlib-populate-prefix/src/zlib-populate-stamp/extract-zlib-populate.cmake
+source_dir=/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/zlib-src
+work_dir=/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps
+url(s)=https://zlib.net/zlib131.zip
+hash=
+no_extract=
+

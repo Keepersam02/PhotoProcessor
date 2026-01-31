@@ -37,7 +37,11 @@ image_type valid_file(std::string path) {
  * raw file. IF it is png or JPEG return appropriate If it is none then check if
  * libraw can read it and return appropriately
  */
-image_type supported_image(std::string path) {
+image_type image_format(std::string path) {
+  if (path.empty()) {
+    return ERROR;
+  }
+
   std::ifstream file(path);
   std::array<std::byte, 16> header{};
   file.read(reinterpret_cast<char *>(header.data()), header.size());
@@ -57,19 +61,30 @@ image_type supported_image(std::string path) {
       std::equal(png_header.begin(), png_header.end(), header.begin());
   bool is_tiff =
       std::equal(tiff_header.begin(), tiff_header.end(), header.begin());
-  bool raw_t = is_raw(path);
+
+  if (is_tiff) {
+    return RAW_FILE;
+  }
+  if (is_png) {
+    return PNG_FILE;
+  }
+  if (is_tiff) {
+    return TIFF_FILE;
+  }
   return NOT_IMAGE;
 }
 
-namespace {
 /*
  * Determine if a tiff file appears to be a raw file
  */
-bool is_raw(std::string path) {
+bool is_raw_tiff(std::string path) {
   TIFF *file = TIFFOpen(path.c_str(), "r");
+  if (file == NULL) {
+    return false;
+  }
   char cfa_pattern;
   char cfa_pattern_dim;
-  char active_field;
+  char active_field = 0;
 
   if (TIFFGetField(file, TIFFTAG_CFAPATTERN, &cfa_pattern) != 1 &&
       TIFFGetField(file, TIFFTAG_CFAREPEATPATTERNDIM, &cfa_pattern_dim) != 1 &&
@@ -78,4 +93,3 @@ bool is_raw(std::string path) {
   }
   return true;
 }
-} // namespace

@@ -2,6 +2,9 @@ add_executable(bpp_tests
   ./io_tests/image_io_test.cpp
 )
 
+target_compile_options(bpp_tests PRIVATE -g -O0)
+set(CMAKE_BUILD_TYPE Debug)
+
 include(FetchContent)
 FetchContent_Declare(
   GTest

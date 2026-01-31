@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/CMakeFiles/libtiff-populate"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/CMakeFiles/libtiff-populate.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/CMakeFiles/libtiff-populate-complete.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-build.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-configure.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-download.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-install.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-patch.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-test.rule"
+		},
+		{
+			"file" : "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/libtiff-populate-prefix/src/libtiff-populate-stamp/libtiff-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"libtiff-populate"
+		],
+		"name" : "libtiff-populate"
+	}
+}

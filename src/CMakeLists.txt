@@ -5,7 +5,7 @@ add_library(bpp_lib
 )
 
 target_compile_options(bpp_lib PRIVATE
-  $<$<CONFIG:Debug>:-Wall -Wextra -Werror -Og>
+  $<$<CONFIG:Debug>:-Wall -Wextra -Werror -g -O0>
 )
 
 target_compile_options(bpp_lib PRIVATE
@@ -15,6 +15,9 @@ target_compile_options(bpp_lib PRIVATE
 target_include_directories(bpp_lib PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+target_include_directories(bpp_lib SYSTEM PRIVATE /usr/include/tiff)
+
 
 include(FetchContent)
 

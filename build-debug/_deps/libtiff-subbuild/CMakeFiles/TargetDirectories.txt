@@ -1,0 +1,3 @@
+/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/CMakeFiles/libtiff-populate.dir
+/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/CMakeFiles/edit_cache.dir
+/home/keepersam02/coding_projects/02-personal/PhotoProcessor/build-debug/_deps/libtiff-subbuild/CMakeFiles/rebuild_cache.dir

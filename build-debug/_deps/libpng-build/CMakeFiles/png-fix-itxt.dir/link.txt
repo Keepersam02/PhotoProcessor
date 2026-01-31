@@ -1,0 +1,1 @@
+/usr/bin/cc -g "CMakeFiles/png-fix-itxt.dir/contrib/tools/png-fix-itxt.c.o" -o png-fix-itxt  /usr/lib/x86_64-linux-gnu/libz.so -lm 
