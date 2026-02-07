@@ -5,7 +5,16 @@ add_library(bpp_lib
 )
 
 target_compile_options(bpp_lib PRIVATE
-  $<$<CONFIG:Debug>:-Wall -Wextra -Werror -g -O0>
+  $<$<CONFIG:Debug>:-Wall -Wextra -Werror -g -O0
+    -Wpedantic
+    -Wshadow
+    -Wnon-virtual-dtor
+    -Wold-style-cast
+    -Wcast-align
+    -Wunused
+    -Woverloaded-virtual
+    -Wconversion
+    -Wsign-conversion
 )
 
 target_compile_options(bpp_lib PRIVATE
