@@ -1,24 +1,22 @@
 #include "image_io.hpp"
+#include "image_io_error.hpp"
 #include "libraw/libraw.h"
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <libraw/libraw_const.h>
 #include <memory>
+#include <optional>
 #include <png.h>
 #include <string>
 #include <tiff.h>
 #include <tiffio.h>
 
 namespace fs = std::filesystem;
-
-typedef struct {
-  int length;
-  std::array<std::byte, 16> data{};
-} file_signature;
 
 image_type valid_file(std::string path) {
   fs::path file_path(path);
@@ -34,7 +32,7 @@ image_type valid_file(std::string path) {
  * raw file. IF it is png or JPEG return appropriate If it is none then check if
  * libraw can read it and return appropriately
  */
-image_type image_format(std::string path) {
+std::expected<image_type, io_error> image_format(std::string path) {
   if (path.empty()) {
     return ERROR;
   }
@@ -76,9 +74,10 @@ image_type image_format(std::string path) {
 /*
  * Determine if a tiff file appears to be a raw file
  */
-bool is_raw_tiff(std::string path) {
+std::expected<bool, io_error> is_raw_tiff(std::string path) {
   TIFF *file = TIFFOpen(path.c_str(), "r");
   if (file == NULL) {
+
     return false;
   }
   char cfa_pattern;

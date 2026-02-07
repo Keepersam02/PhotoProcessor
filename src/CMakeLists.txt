@@ -2,20 +2,29 @@ add_library(bpp_lib
   temp.cpp
   io/image_io.cpp
   io/image_io.hpp
+  io/image_io_error.hpp
 )
 
 target_compile_options(bpp_lib PRIVATE
-  $<$<CONFIG:Debug>:-Wall -Wextra -Werror -g -O0
-    -Wpedantic
-    -Wshadow
-    -Wnon-virtual-dtor
-    -Wold-style-cast
-    -Wcast-align
-    -Wunused
-    -Woverloaded-virtual
-    -Wconversion
-    -Wsign-conversion
+  $<$<CONFIG:Debug>:
+    -Wall;
+    -Wextra;
+    -Werror;
+    -g;
+    -O0;
+    -Wpedantic;
+    -Wshadow;
+    -Wnon-virtual-dtor;
+    -Wold-style-cast;
+    -Wcast-align;
+    -Wunused;
+    -Woverloaded-virtual;
+    -Wconversion;
+    -Wsign-conversion;
+    >
 )
+
+target_compile_features(bpp_lib PRIVATE cxx_std_23)
 
 target_compile_options(bpp_lib PRIVATE
   $<$<CONFIG:Release>:-O3>

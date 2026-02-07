@@ -1,19 +1,24 @@
 #include "../../src/io/image_io.hpp"
+#include "../../src/io/image_io_error.hpp"
 #include "gtest/gtest.h"
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
+#include <tiff.h>
+#include <tiffio.h>
 #include <vector>
 
 namespace fs = std::filesystem;
 
-typedef struct {
+namespace {
+struct image_io_test_case {
   std::string file_name;
   image_type expected_type;
   bool is_raw;
   std::array<std::byte, 16> file_header;
-} image_io_test_case;
+};
+} // namespace
 
 std::vector<image_io_test_case> test_cases{
     {"tiff_non_raw",
@@ -41,4 +46,41 @@ TEST(image_io, image_format) {
   }
 }
 
-TEST(image_io, is_raw_tiff) {}
+TEST(image_io, is_raw_tiff) {
+
+  std::vector<image_io_test_case> test_cases{
+      {"raw_image", RAW_FILE, true, {}},
+      {"non_raw_image", TIFF_FILE, false, {}}};
+
+  fs::path test_dir = fs::temp_directory_path();
+  for (image_io_test_case t_case : test_cases) {
+    fs::path file_path(test_dir / t_case.file_name);
+    TIFF *new_im = TIFFOpen(file_path.c_str(), "w");
+    if (!new_im) {
+      std::cerr << "Failed to write test file: " << t_case.file_name
+                << std::endl;
+    }
+    TIFFSetField(new_im, TIFFTAG_IMAGEWIDTH, 50);
+    TIFFSetField(new_im, TIFFTAG_IMAGELENGTH, 50);
+    TIFFSetField(new_im, TIFFTAG_BITSPERSAMPLE, 8);
+    TIFFSetField(new_im, TIFFTAG_SAMPLESPERPIXEL, 1);
+    TIFFSetField(new_im, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+
+    if (t_case.is_raw) {
+      int cfa_pattern[] = {0, 1, 1, 2};
+      int cfa_repeat_dim[] = {2, 2};
+      int active_area[] = {4, 4, 3004, 4004};
+      TIFFSetField(new_im, TIFFTAG_CFAPATTERN, cfa_pattern);
+      TIFFSetField(new_im, TIFFTAG_CFAREPEATPATTERNDIM, cfa_repeat_dim);
+      TIFFSetField(new_im, TIFFTAG_ACTIVEAREA, active_area);
+    }
+    TIFFClose(new_im);
+  }
+  for (image_io_test_case t_case : test_cases) {
+    fs::path file_path = test_dir / t_case.file_name;
+    bool res = is_raw_tiff(file_path.c_str());
+    ASSERT_EQ(res, t_case.is_raw);
+  }
+}
+
+TEST(raw_image_io, is_raw) {}
