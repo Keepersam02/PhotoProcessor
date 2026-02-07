@@ -7,6 +7,7 @@ enum image_type {
   TIFF_FILE,
   PNG_FILE,
   JPEG_FILE,
+  INTER_IM,
   UNSUPPORTED_IMAGE,
   NOT_IMAGE,
   FILE_DOES_NOT_EXIST,
@@ -15,4 +16,5 @@ enum image_type {
 };
 
 image_type image_format(std::string path);
-image_type is_raw_tiff(std::string path);
+bool is_raw_tiff(std::string path);
+bool is_raw_file(std::string path);
