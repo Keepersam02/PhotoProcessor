@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <expected>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <libraw/libraw_const.h>
@@ -18,7 +19,7 @@
 
 namespace fs = std::filesystem;
 
-image_type valid_file(std::string path) {
+std::expected<image_type, image_error> valid_file(std::string path) {
   fs::path file_path(path);
   if (!fs::exists(file_path) || !fs::is_regular_file(path)) {
     return FILE_DOES_NOT_EXIST;
@@ -32,7 +33,7 @@ image_type valid_file(std::string path) {
  * raw file. IF it is png or JPEG return appropriate If it is none then check if
  * libraw can read it and return appropriately
  */
-std::expected<image_type, io_error> image_format(std::string path) {
+std::expected<image_type, image_error> image_format(std::string path) {
   if (path.empty()) {
     return ERROR;
   }
@@ -41,9 +42,11 @@ std::expected<image_type, io_error> image_format(std::string path) {
   std::array<std::byte, 16> header{};
   file.read(reinterpret_cast<char *>(header.data()), header.size());
   if (file.gcount() != 16) {
-    std::cerr << "failed to read expected number of bytes from: " << path
-              << " read: " << file.gcount() << std::endl;
+    auto err =
+        image_error::IO(1, err_severity::DEBUG, "unexpected amoount bytes read",
+                        std::format("expected: 16 got: {:>10}", file.gcount()));
     file.close();
+    return std::unexpected<image_error>{err};
   }
 
   const std::array<std::byte, 8> png_header{
@@ -74,25 +77,33 @@ std::expected<image_type, io_error> image_format(std::string path) {
 /*
  * Determine if a tiff file appears to be a raw file
  */
-std::expected<bool, io_error> is_raw_tiff(std::string path) {
+std::expected<bool, image_error> is_raw_tiff(std::string path) {
   TIFF *file = TIFFOpen(path.c_str(), "r");
   if (file == NULL) {
+    auto err =
+        image_error::IO_LTIFF(0, err_severity::DEBUG, "null file: " + path,
+                              "occured in: is_raw_tiff");
+    return std::unexpected<image_error>{err};
+  }
+  uint32_t count = 0;
+  void *cfa_pattern = nullptr;
+  uint16_t *cfa_pattern_dim = nullptr;
+  uint32_t *active_field = nullptr;
 
+  bool has_cfa = TIFFGetField(file, TIFFTAG_CFAPATTERN, &count, &cfa_pattern);
+  bool has_pat_dim =
+      TIFFGetField(file, TIFFTAG_CFAREPEATPATTERNDIM, &cfa_pattern_dim);
+  bool has_active_field = TIFFGetField(file, TIFFTAG_ACTIVEAREA, &active_field);
+
+  if (!has_cfa || !has_pat_dim || !has_active_field) {
+    TIFFClose(file);
     return false;
   }
-  char cfa_pattern;
-  char cfa_pattern_dim;
-  char active_field = 0;
-
-  if (TIFFGetField(file, TIFFTAG_CFAPATTERN, &cfa_pattern) != 1 &&
-      TIFFGetField(file, TIFFTAG_CFAREPEATPATTERNDIM, &cfa_pattern_dim) != 1 &&
-      TIFFGetField(file, TIFFTAG_ACTIVEAREA, active_field) != 1) {
-    return false;
-  }
+  TIFFClose(file);
   return true;
 }
 
-bool is_raw_file(std::string path) {
+std::expected<bool, image_error> is_raw_file(std::string path) {
   LibRaw raw;
   int res = raw.open_file(path.c_str());
   if (res != 0) {

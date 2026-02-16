@@ -2,6 +2,8 @@ add_executable(bpp_app
   main.cpp
 )
 
+target_compile_features(bpp_app PUBLIC cxx_std_23)
+
 target_compile_options(bpp_app PRIVATE
   $<$<CONFIG:Debug>:-Wall -Wextra -Werror -Og>
 )

@@ -17,6 +17,6 @@ enum image_type {
   ERROR
 };
 
-std::expected<image_type, io_error> image_format(std::string path);
-std::expected<bool, io_error> is_raw_tiff(std::string path);
-bool is_raw_file(std::string path);
+std::expected<image_type, image_error> image_format(std::string path);
+std::expected<bool, image_error> is_raw_tiff(std::string path);
+std::expected<bool, image_error> is_raw_file(std::string path);

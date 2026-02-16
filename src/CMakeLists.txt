@@ -24,7 +24,7 @@ target_compile_options(bpp_lib PRIVATE
     >
 )
 
-target_compile_features(bpp_lib PRIVATE cxx_std_23)
+target_compile_features(bpp_lib PUBLIC cxx_std_23)
 
 target_compile_options(bpp_lib PRIVATE
   $<$<CONFIG:Release>:-O3>
@@ -38,7 +38,6 @@ target_include_directories(bpp_lib SYSTEM PRIVATE /usr/include/tiff)
 
 
 include(FetchContent)
-
 # Fetch zlib first (dependency for libpng and libtiff)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_Declare(
