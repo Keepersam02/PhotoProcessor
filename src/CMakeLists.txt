@@ -1,9 +1,10 @@
 add_library(bpp_lib
   temp.cpp
-  io/image_io.cpp
-  io/image_io.hpp
+  io/image_ver.cpp
+  io/image_ver.hpp
   io/image_io_error.hpp
 )
+
 
 target_compile_options(bpp_lib PRIVATE
   $<$<CONFIG:Debug>:
@@ -36,6 +37,14 @@ target_include_directories(bpp_lib PUBLIC
 
 target_include_directories(bpp_lib SYSTEM PRIVATE /usr/include/tiff)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+  target_compile_options(bpp_lib PUBLIC
+  -fsanitize=address;
+  )
+  target_compile_options(bpp_lib PUBLIC -fno-omit-frame-pointer)
+  target_link_options(bpp_lib PUBLIC -fsanitize=address)
+endif()
 
 include(FetchContent)
 # Fetch zlib first (dependency for libpng and libtiff)
