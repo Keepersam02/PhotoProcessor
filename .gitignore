@@ -2,3 +2,4 @@
 **/build/
 **/build-debug/
 compile_commands.json
+**test/test_images/
