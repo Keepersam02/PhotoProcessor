@@ -35,7 +35,9 @@ std::expected<image_type, image_error> valid_file(std::string path) {
  */
 std::expected<image_type, image_error> image_format(std::string path) {
   if (path.empty()) {
-    return ERROR;
+    return std::unexpected<image_error>{image_error::IO(
+        0, err_severity::DEBUG,
+        std::format("empty path passed, path: {}", path.c_str()), "")};
   }
 
   std::ifstream file(path);

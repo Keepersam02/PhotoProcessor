@@ -130,3 +130,5 @@ TEST(image_io_verification, is_raw) {
     }
   }
 }
+
+TEST(Image_IO, simple_search) {}

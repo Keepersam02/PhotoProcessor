@@ -3,6 +3,8 @@ add_library(bpp_lib
   io/image_ver.cpp
   io/image_ver.hpp
   io/image_io_error.hpp
+  io/image_io.cpp
+  io/image_io.hpp
 )
 
 
