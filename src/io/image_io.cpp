@@ -85,11 +85,11 @@ sort_file(std::vector<fs::path> &files) {
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
       continue;
     } else if (im_format != image_type::TIFF_FILE) {
-      rej_files.push_back(
+      rej_files.push_back(std::make_pair(
           file, image_error::IO(0, err_severity::WARNING,
                                 std::format("unsupported file format, path: {}",
                                             file.c_str()),
-                                ""));
+                                "")));
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
       continue;
     }
