@@ -1,9 +1,15 @@
 #include "image_io_error.hpp"
 #include "io/image_ver.hpp"
 #include <cstddef>
+#include <cstdio>
 #include <expected>
+#include <fcntl.h>
 #include <filesystem>
 #include <format>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <utility>
 #include <vector>
 
@@ -26,13 +32,15 @@ find_files(const fs::path path) {
         "")};
   }
   if (fs::is_directory(path)) {
-    std::vector<fs::path> file_entries(250);
-    for (auto const &dir_entry : fs::directory_iterator{path}) {
+    std::vector<fs::path> file_entries;
+    auto iter = fs::directory_iterator{path};
+    for (const auto &dir_entry : iter) {
       if (!fs::is_regular_file(dir_entry)) {
         continue;
       }
-      file_entries.push_back(dir_entry.path());
+      file_entries.push_back(dir_entry);
     }
+    return file_entries;
   } else if (fs::is_regular_file(path)) {
     return std::vector<fs::path>{path};
   }
@@ -51,48 +59,71 @@ find_files(const fs::path path) {
  * image_error with the reason why.
  * TODO remove jpeg and png non support once supported
  */
-std::expected<std::vector<std::pair<fs::path, image_error>>, image_error>
+std::expected<std::vector<fs::path>, image_error>
 sort_file(std::vector<fs::path> &files) {
-  std::vector<std::pair<fs::path, image_error>> rej_files;
+  std::vector<fs::path> rej_files;
   for (size_t i = 0; i < files.size(); i++) {
     fs::path file = files.at(i);
     auto im_format_ret = image_format(file);
     if (!im_format_ret) {
-      rej_files.push_back(std::make_pair(file, im_format_ret.error()));
+      rej_files.push_back(file);
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
+      i--;
       continue;
     }
     auto im_format = im_format_ret.value();
 
     if (im_format == image_type::INTER_IM) {
       auto is_raw_r = is_raw_file(file);
-      if (!is_raw_r) {
-        rej_files.push_back(std::make_pair(
-            file, image_error::IO_LRAW(0, err_severity::DEBUG,
-                                       "file format not supported", "")));
+      if (!is_raw_r || !is_raw_r.value()) {
+        rej_files.push_back(file);
         files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
+        i--;
       }
       continue;
     } else if (im_format == image_type::PNG_FILE ||
                im_format == image_type::JPEG_FILE) {
-      rej_files.push_back(std::make_pair(
-          file,
-          image_error::IO(0, err_severity::DEBUG,
-                          std::format("temporarily unsupported image format, "
-                                      "possible formats: JPEG PNG, path: {}",
-                                      file.c_str()),
-                          "")));
+      rej_files.push_back(file);
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
+      i--;
       continue;
     } else if (im_format != image_type::TIFF_FILE) {
-      rej_files.push_back(std::make_pair(
-          file, image_error::IO(0, err_severity::WARNING,
-                                std::format("unsupported file format, path: {}",
-                                            file.c_str()),
-                                "")));
+      rej_files.push_back(file);
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
+      i--;
       continue;
     }
   }
   return rej_files;
+}
+
+std::expected<std::vector<char *>, image_error>
+file_loader(std::vector<fs::path> file_paths,
+            std::vector<std::pair<fs::path, image_error>> failed) {
+  std::vector<char *> files;
+  int f_desc;
+  for (const auto &path : file_paths) {
+    f_desc = open(path.c_str(), O_RDONLY);
+    void *data;
+
+    struct stat sbuf;
+    if (stat(path.c_str(), &sbuf) == -1) {
+      failed.push_back(std::make_pair(
+          path, image_error::IO(0, err_severity::WARNING,
+                                "stat failed to get required file info", "")));
+      continue;
+    }
+
+    data = mmap(nullptr, static_cast<size_t>(sbuf.st_size), PROT_READ,
+                MAP_SHARED, f_desc, 0);
+    if (data == MAP_FAILED) {
+      failed.push_back(std::make_pair(
+          path,
+          image_error::IO(0, err_severity::WARNING,
+                          std::format("failed to create map for memory"), "")));
+      continue;
+    }
+    files.push_back(static_cast<char *>(data));
+  }
+  return files;
 }

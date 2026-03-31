@@ -29,3 +29,6 @@ target_link_libraries(bpp_tests PRIVATE
   gmock
   gmock_main
 )
+
+
+target_compile_definitions(bpp_tests PRIVATE TEST_IMAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test_images")
