@@ -1,17 +1,13 @@
+#include "exif.hpp"
+#include "exiv2.hpp"
+#include "xmp_exiv2.hpp"
 #include <cstdint>
 #include <stdfloat>
 #include <string>
 #include <vector>
 
-enum color_space {
-
-}
-
-struct Image {
-  std::string file_name;
-  std::string file_path;
-
-  int height;
-  int width;
-  int channels;
+class std_image {
+public:
+  Exiv2::ExifData exif_data;
+  Exiv2::XmpData xmp_data;
 }
