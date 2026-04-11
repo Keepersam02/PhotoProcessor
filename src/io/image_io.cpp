@@ -13,6 +13,23 @@
 
 namespace fs = std::filesystem;
 
+
+#include "image_io.hpp"
+
+image_type valid_file(std::string path) {
+    return FILE_DOES_NOT_EXIST;
+}
+
+bool is_raw(std::string path) {
+    return false;
+}
+
+image_type supported_image(std::string path) {
+    return UNSUPPORTED_IMAGE;
+}
+/*
+old work: 
+
 typedef struct {
   int length;
   std::array<std::byte, 16> data{};
@@ -73,3 +90,4 @@ image_type supported_image(std::string path) {
 
   return UNSUPPORTED_IMAGE;
 }
+*/

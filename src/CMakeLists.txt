@@ -19,9 +19,11 @@ target_include_directories(bpp_lib PUBLIC
 include(FetchContent)
 
 # Fetch zlib first (dependency for libpng and libtiff)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_Declare(
   zlib
-  URL https://zlib.net/zlib131.zip
+  GIT_REPOSITORY https://github.com/madler/zlib.git
+  GIT_TAG        v1.3.1
 )
 FetchContent_MakeAvailable(zlib)
 
@@ -38,6 +40,14 @@ FetchContent_Declare(
   URL https://gitlab.com/libtiff/libtiff/-/archive/v4.7.1/libtiff-v4.7.1.zip
 )
 FetchContent_MakeAvailable(libtiff)
+
+#Fetch SQLite
+FetchContent_Declare(
+  SQLiteCpp
+  GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
+  GIT_TAG        3.3.3
+)
+FetchContent_MakeAvailable(SQLiteCpp)
 
 # Fetch Exiv2
 FetchContent_Declare(
@@ -68,3 +78,6 @@ target_link_libraries(bpp_lib PRIVATE tiff)
 
 # Add zlib
 target_link_libraries(bpp_lib PRIVATE zlibstatic)
+
+# Add SQLiteCpp
+target_link_libraries(bpp_lib PRIVATE SQLiteCpp sqlite3 pthread dl)
