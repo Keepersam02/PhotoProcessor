@@ -53,7 +53,8 @@ include(FetchContent)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_Declare(
   zlib
-  URL https://zlib.net/zlib131.zip
+  GIT_REPOSITORY https://github.com/madler/zlib.git
+  GIT_TAG        v1.3.1  # Or whatever version you need
 )
 FetchContent_MakeAvailable(zlib)
 
@@ -62,6 +63,7 @@ FetchContent_Declare(
   libpng
   URL http://prdownloads.sourceforge.net/libpng/lpng1653.zip
 )
+set(PNG_DEBUG_POSTFIX "" CACHE STRING "Disable debug suffix" FORCE)
 FetchContent_MakeAvailable(libpng)
 
 # Fetch libtiff

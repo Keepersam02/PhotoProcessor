@@ -1,5 +1,8 @@
+#include "exiv2.hpp"
 #include "image_io_error.hpp"
 #include "io/image_ver.hpp"
+#include "tiff.h"
+#include "types/image.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <expected>
@@ -9,6 +12,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <tiffio.h>
 #include <unistd.h>
 #include <utility>
 #include <vector>
@@ -97,10 +101,10 @@ sort_file(std::vector<fs::path> &files) {
   return rej_files;
 }
 
-std::expected<std::vector<char *>, image_error>
+std::expected<std::vector<std::pair<void *, size_t>>, image_error>
 file_loader(std::vector<fs::path> file_paths,
             std::vector<std::pair<fs::path, image_error>> failed) {
-  std::vector<char *> files;
+  std::vector<std::pair<void *, size_t>> files;
   int f_desc;
   for (const auto &path : file_paths) {
     f_desc = open(path.c_str(), O_RDONLY);
@@ -123,7 +127,26 @@ file_loader(std::vector<fs::path> file_paths,
                           std::format("failed to create map for memory"), "")));
       continue;
     }
-    files.push_back(static_cast<char *>(data));
+    files.push_back(std::make_pair(data, sbuf.st_size));
   }
   return files;
+}
+
+std::expected<bool, image_error> tiff_exporter(fs::path out_dir, int suffix,
+                                               std_image image) {
+  auto file_name = image.path.filename();
+  auto output_path = fs::path(out_dir / file_name);
+  output_path.replace_extension(".tiff");
+  TIFF *file = TIFFOpen(output_path.c_str(), 'w');
+  TIFFSetField(file, TIFFTAG_IMAGEWIDTH,
+               image.exif_data["Exif.Image.ImageWidth"]);
+  TIFFSetField(file, TIFFTAG_IMAGELENGTH,
+               image.exif_data["Exif.Image.ImageLength"]);
+  TIFFSetField(file, TIFFTAG_SAMPLESPERPIXEL,
+               image.exif_data["Exif.Image.SamplesPerPixel"]);
+  TIFFSetField(file, TIFFTAG_BITSPERSAMPLE,
+               image.exif_data["Exif.Image.BitsPerSample"]);
+  TIFFSetField(file, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+  TIFFSetField(file, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(file, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 }
