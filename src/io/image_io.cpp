@@ -1,10 +1,10 @@
-#include "exiv2.hpp"
 #include "image_io_error.hpp"
-#include "io/image_ver.hpp"
+#include "image_ver.hpp"
 #include "tiff.h"
 #include "types/image.hpp"
 #include <cstddef>
 #include <cstdio>
+#include <exiv2/exiv2.hpp>
 #include <expected>
 #include <fcntl.h>
 #include <filesystem>
@@ -21,7 +21,7 @@ namespace fs = std::filesystem;
 
 /*
  * Take user provided path and either add the provided file or search one level
- * deep if directory is provided.
+ * deep if is provided.
  * Return IO image_error if path leads to non-existant file or is not directory
  * or regular file.
  */
@@ -134,19 +134,22 @@ file_loader(std::vector<fs::path> file_paths,
 
 std::expected<bool, image_error> tiff_exporter(fs::path out_dir, int suffix,
                                                std_image image) {
-  auto file_name = image.path.filename();
+  auto file_name = image.path_.filename();
+  std::string name = file_name.c_str();
+  name.append(std::format("{}", suffix));
   auto output_path = fs::path(out_dir / file_name);
   output_path.replace_extension(".tiff");
-  TIFF *file = TIFFOpen(output_path.c_str(), 'w');
+  TIFF *file = TIFFOpen(output_path.c_str(), "w");
   TIFFSetField(file, TIFFTAG_IMAGEWIDTH,
-               image.exif_data["Exif.Image.ImageWidth"]);
+               image.exif_data_["Exif.Image.ImageWidth"]);
   TIFFSetField(file, TIFFTAG_IMAGELENGTH,
-               image.exif_data["Exif.Image.ImageLength"]);
+               image.exif_data_["Exif.Image.ImageLength"]);
   TIFFSetField(file, TIFFTAG_SAMPLESPERPIXEL,
-               image.exif_data["Exif.Image.SamplesPerPixel"]);
+               image.exif_data_["Exif.Image.SamplesPerPixel"]);
   TIFFSetField(file, TIFFTAG_BITSPERSAMPLE,
-               image.exif_data["Exif.Image.BitsPerSample"]);
+               image.exif_data_["Exif.Image.BitsPerSample"]);
   TIFFSetField(file, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(file, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(file, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+  return true;
 }

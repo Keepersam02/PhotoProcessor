@@ -73,25 +73,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(libtiff)
 
-# Fetch Exiv2
-FetchContent_Declare(
-  exiv2
-  URL https://github.com/Exiv2/exiv2/archive/refs/tags/v0.28.7.zip
-)
-FetchContent_MakeAvailable(exiv2)
+find_package(exiv2 REQUIRED)
 
 # Find system packages for JPEG and LibRaw
 find_package(JPEG REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LibRaw REQUIRED libraw_r)
-target_include_directories(bpp_lib PRIVATE ${LibRaw_INCLUDE_DIRS})
+pkg_check_modules(Exiv2 REQUIRED exiv2)
+target_include_directories(bpp_lib PRIVATE ${LibRaw_INCLUDE_DIRS}
+${Exiv2_INCLUDE_DIRS}
+)
 
 # Link libraries - use PUBLIC to propagate include directories
 target_link_libraries(bpp_lib PRIVATE
     JPEG::JPEG      # libjpeg (system)
-    ${LibRaw_LIBRARIES}  # LibRaw
-    exiv2lib        # Exiv2
+    ${LibRaw_LIBRARIES}
+    ${Exiv2_LIBRARIES} # LibRaw
 )
 
 # Add png library with proper target
