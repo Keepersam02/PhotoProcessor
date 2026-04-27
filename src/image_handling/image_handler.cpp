@@ -53,9 +53,7 @@ handler(std::vector<fs::path> file_paths, std::vector<int *> pipeline,
   return images;
 }
 
-std::expected<std::vector<std::tuple<std::vector<float>, exiv2::ExifData,
-                                     Exiv2::XmpData>>,
-              image_error>
+std::expected<std::vector<std_image>, image_error>
 image_creator(std::vector<std::pair<void *, size_t>> files,
               std::vector<std::pair<char *, image_error>> failed) {
   std::vector<std::tuple<std::vector<flaot>, Exiv2::ExifData, Exiv2::XmpData>>
