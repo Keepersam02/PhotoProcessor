@@ -22,12 +22,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(GTest)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(Exiv2 REQUIRED exiv2)
+target_include_directories(bpp_tests PRIVATE
+${Exiv2_INCLUDE_DIRS})
+
 target_link_libraries(bpp_tests PRIVATE
   bpp_lib
   gtest
   gtest_main
   gmock
   gmock_main
+  ${Exiv2_LIBRARIES}
 )
 
 
