@@ -4,6 +4,7 @@
 #include <stdfloat>
 #include <string>
 #include <vector>
+#pragma once
 
 namespace fs = std::filesystem;
 
@@ -12,6 +13,8 @@ class std_image {
 private:
   struct Exiv2Context;
   std::unique_ptr<Exiv2Context> pimpl_;
+
+  friend Exiv2Context &get_internal_context(std_image &image);
 
 public:
   fs::path path_;

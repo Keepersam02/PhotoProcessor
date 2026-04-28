@@ -2,8 +2,10 @@
 #include "image_ver.hpp"
 #include "tiff.h"
 #include "types/image.hpp"
+#include "types/image_internal.hpp"
 #include <cstddef>
 #include <cstdio>
+#include <exiv2/exif.hpp>
 #include <exiv2/exiv2.hpp>
 #include <expected>
 #include <fcntl.h>
@@ -134,20 +136,20 @@ file_loader(std::vector<fs::path> file_paths,
 
 std::expected<bool, image_error> tiff_exporter(fs::path out_dir, int suffix,
                                                std_image image) {
+  Exiv2::ExifData &raw_exif = get_internal_context(image).exif_data_;
+
   auto file_name = image.path_.filename();
   std::string name = file_name.c_str();
   name.append(std::format("{}", suffix));
   auto output_path = fs::path(out_dir / file_name);
   output_path.replace_extension(".tiff");
   TIFF *file = TIFFOpen(output_path.c_str(), "w");
-  TIFFSetField(file, TIFFTAG_IMAGEWIDTH,
-               image.exif_data_["Exif.Image.ImageWidth"]);
-  TIFFSetField(file, TIFFTAG_IMAGELENGTH,
-               image.exif_data_["Exif.Image.ImageLength"]);
+  TIFFSetField(file, TIFFTAG_IMAGEWIDTH, raw_exif["Exif.Image.ImageWidth"]);
+  TIFFSetField(file, TIFFTAG_IMAGELENGTH, raw_exif["Exif.Image.ImageLength"]);
   TIFFSetField(file, TIFFTAG_SAMPLESPERPIXEL,
-               image.exif_data_["Exif.Image.SamplesPerPixel"]);
+               raw_exif["Exif.Image.SamplesPerPixel"]);
   TIFFSetField(file, TIFFTAG_BITSPERSAMPLE,
-               image.exif_data_["Exif.Image.BitsPerSample"]);
+               raw_exif["Exif.Image.BitsPerSample"]);
   TIFFSetField(file, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(file, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(file, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
