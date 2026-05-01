@@ -1,5 +1,6 @@
+#app
 # Stub bpp_lib so linker is happy while src is disabled
-add_library(bpp_lib INTERFACE)
+# add_library(bpp_lib INTERFACE)
 
 add_executable(bpp_app
   main.cpp

@@ -1,3 +1,4 @@
+#src
 add_library(bpp_lib
   temp.cpp
   io/image_io.cpp
@@ -45,7 +46,7 @@ FetchContent_MakeAvailable(libtiff)
 FetchContent_Declare(
   SQLiteCpp
   GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
-  GIT_TAG        3.3.3
+  GIT_TAG        3.3.1
 )
 FetchContent_MakeAvailable(SQLiteCpp)
 
@@ -80,4 +81,4 @@ target_link_libraries(bpp_lib PRIVATE tiff)
 target_link_libraries(bpp_lib PRIVATE zlibstatic)
 
 # Add SQLiteCpp
-target_link_libraries(bpp_lib PRIVATE SQLiteCpp sqlite3 pthread dl)
+target_link_libraries(bpp_lib PRIVATE SQLiteCpp sqlite3)

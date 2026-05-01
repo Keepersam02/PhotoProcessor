@@ -1,3 +1,4 @@
+#test
 add_executable(bpp_tests
   ./io_tests/image_io_test.cpp
 )
