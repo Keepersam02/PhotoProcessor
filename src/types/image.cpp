@@ -1,6 +1,5 @@
 #include "image.hpp"
 #include "io/image_io_error.hpp"
-#include <algorithm>
 #include <exiv2/exif.hpp>
 #include <exiv2/exiv2.hpp>
 #include <exiv2/xmp_exiv2.hpp>

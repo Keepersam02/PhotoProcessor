@@ -1,17 +1,13 @@
 #include "convert.hpp"
-#include "exiv2/exiv2.hpp"
 #include "image.hpp"
 #include "io/image_io.hpp"
 #include "io/image_io_error.hpp"
-#include "io/image_ver.hpp"
 #include "libraw.h"
 #include "types.hpp"
 #include "types/image.hpp"
-#include "xmp_exiv2.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <expected>
-#include <tuple>
 #include <utility>
 #include <vector>
 

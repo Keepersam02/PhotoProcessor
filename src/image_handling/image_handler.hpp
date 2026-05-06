@@ -1,6 +1,5 @@
 #include "io/image_io_error.hpp"
 #include "types/image.hpp"
-#include <exif.hpp>
 #include <expected>
 #include <filesystem>
 #include <vector>

@@ -1,10 +1,7 @@
 #include "image_io_error.hpp"
-#include "io/image_ver.hpp"
 #include <cstddef>
-#include <exiv2/exiv2.hpp>
 #include <expected>
 #include <filesystem>
-#include <format>
 #include <utility>
 #include <vector>
 
