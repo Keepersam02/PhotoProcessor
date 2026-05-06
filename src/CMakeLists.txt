@@ -3,6 +3,9 @@ add_library(bpp_lib
   temp.cpp
   io/image_io.cpp
   io/image_io.hpp
+  db/database.cpp
+  db/schema.cpp
+  db/models/batch.cpp
 )
 
 target_compile_options(bpp_lib PRIVATE
@@ -81,4 +84,4 @@ target_link_libraries(bpp_lib PRIVATE tiff)
 target_link_libraries(bpp_lib PRIVATE zlibstatic)
 
 # Add SQLiteCpp
-target_link_libraries(bpp_lib PRIVATE SQLiteCpp sqlite3)
+target_link_libraries(bpp_lib PUBLIC SQLiteCpp sqlite3)

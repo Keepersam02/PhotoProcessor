@@ -27,6 +27,9 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(ftxui)
 
+target_include_directories(bpp_app PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+
 target_link_libraries(bpp_app PRIVATE
     bpp_lib
     -Wl,--start-group
