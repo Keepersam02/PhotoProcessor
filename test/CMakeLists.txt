@@ -1,5 +1,6 @@
 add_executable(bpp_tests
   ./io_tests/image_ver_test.cpp
+  ./src/image/image_handle_test.cpp
 )
 
 target_compile_options(bpp_tests PRIVATE -g -O0)
