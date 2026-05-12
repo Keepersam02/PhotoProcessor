@@ -4,7 +4,7 @@ void Schema::initialize(SQLite::Database& db) {
     db.exec(R"(
         CREATE TABLE IF NOT EXISTS batch (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            name          TEXT    NOT NULL,
+            name          TEXT    NOT NULL UNIQUE,
             date_created  INTEGER NOT NULL,
             date_modified INTEGER NOT NULL,
             status        INTEGER NOT NULL DEFAULT 0
@@ -12,7 +12,7 @@ void Schema::initialize(SQLite::Database& db) {
 
         CREATE TABLE IF NOT EXISTS pipeline (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            name          TEXT    NOT NULL,
+            name          TEXT    NOT NULL UNIQUE,
             date_created  INTEGER NOT NULL,
             date_modified INTEGER NOT NULL
         );
@@ -26,7 +26,7 @@ void Schema::initialize(SQLite::Database& db) {
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             source_id   INTEGER NOT NULL,
             batch_id    INTEGER NOT NULL REFERENCES batch(id),
-            name        TEXT    NOT NULL,
+            name        TEXT    NOT NULL UNIQUE, 
             path        TEXT    NOT NULL,
             db_created  INTEGER NOT NULL,
             db_modified INTEGER NOT NULL

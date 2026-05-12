@@ -5,6 +5,8 @@
     - create pipeline
 - run batch
 
+### Questions
+- unique names for pipeline and batches?
 
 # Photo Processor DB
 
