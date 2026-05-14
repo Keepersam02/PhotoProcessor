@@ -14,11 +14,6 @@ enum class err_type {
 enum class err_severity { DEBUG, WARNING, ERROR, SEVERE };
 
 class image_error {
-  int c_error_;
-  err_type type_;
-  err_severity severity_;
-  std::string message_;
-  std::string extra_info_;
 
   image_error(int c_error, enum err_type type, enum err_severity severity,
               std::string message, std::string extra_info)
@@ -26,6 +21,12 @@ class image_error {
         message_(std::move(message)), extra_info_(std::move(extra_info)) {}
 
 public:
+  int c_error_;
+  err_type type_;
+  err_severity severity_;
+  std::string message_;
+  std::string extra_info_;
+
   static image_error LOGIC(int c_error, enum err_severity err_severity,
                            std::string message, std::string extra_info) {
     return image_error(c_error, err_type::LOGIC, err_severity,

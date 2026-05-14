@@ -1,6 +1,7 @@
 #include "../../src/io/image_io.cpp"
 #include "../../src/io/image_io_error.hpp"
 #include "../../src/io/image_ver.hpp"
+#include "openssl/evp.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <array>
@@ -10,8 +11,11 @@
 #include <expected>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <ios>
 #include <ostream>
+#include <sstream>
+#include <string>
 #include <tiff.h>
 #include <tiffio.h>
 #include <vector>
@@ -142,6 +146,8 @@ struct test_file {
   bool is_reg;
   bool is_valid;
   bool is_nested;
+  size_t file_size;
+  std::string file_hash;
   // todo add more for stuff like a file hash...
 };
 
@@ -173,10 +179,10 @@ protected:
          2,
          {{"_DSF7242.RAF",
            fs::path(master_dir) / "no_nest_all_valid" / "_DSF7242.RAF", false,
-           true, true, false},
+           true, true, false, 58881856, "e61c04bf3275756a403d372e6fecca5e"},
           {"_DSF7226.RAF",
            fs::path(master_dir) / "no_nest_all_valid" / "_DSF7226.RAF", false,
-           true, true, false}}},
+           true, true, false, 59019072, "54b39742b464fe9af609d304a17f7ea6"}}},
         {"no_nest_no_valid",
          0,
          2,
@@ -197,10 +203,10 @@ protected:
            true, false, false},
           {"_DSF7226.RAF",
            fs::path(master_dir) / "no_nest_mix" / "_DSF7226.RAF", false, true,
-           true, false},
+           true, false, 59019072, "54b39742b464fe9af609d304a17f7ea6"},
           {"_DSF7242.RAF",
            fs::path(master_dir) / "no_nest_mix" / "_DSF7242.RAF", false, true,
-           true, false}}}};
+           true, false, 58881856, "e61c04bf3275756a403d372e6fecca5e"}}}};
 
     for (const io_test_case t_case : t_cases) {
       fs::path test_path = fs::path(master_dir) / t_case.name;
@@ -294,12 +300,18 @@ TEST_F(ImageIOFixture, image_io_sort_file) {
   }
 }
 
+namespace {
+std::string get_hash(const void *file, size_t size);
+}
+
 TEST_F(ImageIOFixture, file_loader) {
   for (auto const &t_case : test_cases) {
     std::vector<fs::path> file_paths;
+    std::vector<test_file> test_files;
     for (auto const &file : t_case.files) {
       if (file.is_valid) {
         file_paths.push_back(file.file_path);
+        test_files.push_back(file);
       }
     }
     std::vector<std::pair<fs::path, image_error>> failed;
@@ -308,5 +320,42 @@ TEST_F(ImageIOFixture, file_loader) {
 
     auto const res_vec = res.value();
     EXPECT_EQ(res_vec.size(), t_case.num_succ_no_nest) << t_case.name;
+    ASSERT_EQ(test_files.size(), res_vec.size())
+        << "expected result vector size does not match actual, expected: "
+        << test_files.size() << ", got: " << res_vec.size();
+
+    for (int i = 0; i < test_files.size(); i++) {
+      const auto test_file = test_files.at(i);
+      const auto loaded_pair = res_vec.at(i);
+      auto file_hash = get_hash(loaded_pair.first, loaded_pair.second);
+      EXPECT_EQ(test_file.file_size, loaded_pair.second)
+          << "file sizes do not match, file: " << test_file.name
+          << " expected: " << test_file.file_size
+          << " got: " << loaded_pair.second;
+      EXPECT_EQ(file_hash, test_file.file_hash)
+          << "file hashes do not match, file: " << test_file.name
+          << " expected: " << test_file.file_hash << " got: " << file_hash;
+    }
   }
 }
+
+namespace {
+std::string get_hash(const void *file, size_t size) {
+  EVP_MD_CTX *context = EVP_MD_CTX_new();
+  const EVP_MD *md = EVP_md5();
+  unsigned char raw_hash[EVP_MAX_MD_SIZE];
+  unsigned int hash_length = 0;
+
+  EVP_DigestInit_ex(context, md, nullptr);
+  EVP_DigestUpdate(context, file, size);
+  EVP_DigestFinal_ex(context, raw_hash, &hash_length);
+  EVP_MD_CTX_free(context);
+
+  std::stringstream hex;
+  for (unsigned int i = 0; i < hash_length; i++) {
+    hex << std::hex << std::setw(2) << std::setfill('0')
+        << static_cast<int>(raw_hash[i]);
+  }
+  return hex.str();
+}
+} // namespace

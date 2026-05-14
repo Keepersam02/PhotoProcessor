@@ -1,6 +1,6 @@
 add_executable(bpp_tests
   ./io_tests/image_ver_test.cpp
-  ./src/image/image_handle_test.cpp
+  ./src_test/image_handle_test/image_handler_test.cpp
 )
 
 target_compile_options(bpp_tests PRIVATE -g -O0)
@@ -23,6 +23,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(GTest)
 
+find_package(OpenSSL REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Exiv2 REQUIRED exiv2)
 target_include_directories(bpp_tests PRIVATE
@@ -35,6 +37,7 @@ target_link_libraries(bpp_tests PRIVATE
   gmock
   gmock_main
   ${Exiv2_LIBRARIES}
+  OpenSSL::Crypto
 )
 
 

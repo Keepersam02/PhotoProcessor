@@ -14,6 +14,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <system_error>
 #include <tiffio.h>
 #include <unistd.h>
 #include <utility>
@@ -105,11 +106,18 @@ sort_file(std::vector<fs::path> &files) {
 
 std::expected<std::vector<std::pair<void *, size_t>>, image_error>
 file_loader(std::vector<fs::path> file_paths,
-            std::vector<std::pair<fs::path, image_error>> failed) {
+            std::vector<std::pair<fs::path, image_error>> &failed) {
   std::vector<std::pair<void *, size_t>> files;
   int f_desc;
   for (const auto &path : file_paths) {
     f_desc = open(path.c_str(), O_RDONLY);
+    if (f_desc == -1) {
+      std::string err = std::system_category().message(errno);
+      failed.push_back(
+          std::make_pair(path, image_error::IO(-1, err_severity::ERROR,
+                                               "failed to open file", err)));
+      continue;
+    }
     void *data;
 
     struct stat sbuf;
@@ -131,6 +139,7 @@ file_loader(std::vector<fs::path> file_paths,
     }
     files.push_back(std::make_pair(data, sbuf.st_size));
   }
+  close(f_desc);
   return files;
 }
 
