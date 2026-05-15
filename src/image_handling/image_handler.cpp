@@ -1,7 +1,9 @@
 #include "io/image_io_error.hpp"
+#include <cstdio>
 #include <expected>
 #include <filesystem>
 #include <format>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -14,13 +16,14 @@ std::expected<bool, image_error> file_copier(void *file, size_t file_size,
 
   auto dest_file = fopen(file_dest.c_str(), "wb");
   if (dest_file == NULL) {
+    std::string err = std::system_category().message(errno);
     return std::unexpected(
-        image_error::IO(-1, err_severity::ERROR,
-                        "failed to create destination file to write to",
+        image_error::IO(-1, err_severity::ERROR, err,
                         std::format("src path:{}, dest path: {}", src.c_str(),
                                     file_dest.c_str())));
   }
   auto written = fwrite(file, file_size, 1, dest_file);
+  fclose(dest_file);
   if (written == 0) {
     return std::unexpected(image_error::IO(
         -1, err_severity::ERROR, "failed to write to destination",

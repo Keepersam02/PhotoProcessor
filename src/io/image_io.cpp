@@ -125,6 +125,7 @@ file_loader(std::vector<fs::path> file_paths,
       failed.push_back(std::make_pair(
           path, image_error::IO(0, err_severity::WARNING,
                                 "stat failed to get required file info", "")));
+      close(f_desc);
       continue;
     }
 
@@ -135,11 +136,12 @@ file_loader(std::vector<fs::path> file_paths,
           path,
           image_error::IO(0, err_severity::WARNING,
                           std::format("failed to create map for memory"), "")));
+      close(f_desc);
       continue;
     }
     files.push_back(std::make_pair(data, sbuf.st_size));
+    close(f_desc);
   }
-  close(f_desc);
   return files;
 }
 
