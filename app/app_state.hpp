@@ -4,6 +4,13 @@
 #include "db/schema.hpp"
 #include "db/models/batch.hpp"
 
+/*
+    NEED FROM DB
+1. Batches
+2. Pipelines
+3. Operations
+4. Files
+*/
 struct AppState {
     BatchRepo* batchRepo = nullptr;
     std::vector<Batch> batches;

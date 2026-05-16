@@ -18,9 +18,11 @@ enum class BatchStatus {
     Failed     = 3
 };
 
+
+// Wrapper for DB, executes SQLite queries
 class BatchRepo {
 public:
-    explicit BatchRepo(SQLite::Database& db);
+    BatchRepo(SQLite::Database& db);
 
     void              insert(const Batch& b);
     Batch             findById(int id);

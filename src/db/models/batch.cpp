@@ -1,6 +1,9 @@
 #include "db/models/batch.hpp"
 #include <stdexcept>
 
+/*
+Fancy way:
+*/
 BatchRepo::BatchRepo(SQLite::Database& db) : db_(db) {}
 
 void BatchRepo::insert(const Batch& b) {
