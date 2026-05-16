@@ -145,6 +145,43 @@ file_loader(std::vector<fs::path> file_paths,
   return files;
 }
 
+std::expected<std::pair<void *, size_t>, image_error>
+load_file(fs::path file_path) {
+  auto f_desc = open(file_path.c_str(), O_RDONLY);
+  if (f_desc == -1) {
+    std::string err = std::system_category().message(errno);
+    close(f_desc);
+    return std::unexpected<image_error>(image_error::IO(
+        -1, err_severity::ERROR,
+        std::format("Failed to open {}", file_path.c_str()), err));
+  }
+
+  struct stat sbuf;
+  {
+    auto ret = stat(file_path.c_str(), &sbuf);
+    if (ret == -1) {
+      std::string err = std::system_category().message(errno);
+      close(f_desc);
+      return std::unexpected<image_error>(image_error::IO(
+          -1, err_severity::ERROR,
+          std::format("Failed to get stat for file: {}", file_path.c_str()),
+          err));
+    }
+  }
+  void *data;
+  data = mmap(nullptr, static_cast<size_t>(sbuf.st_size), PROT_READ, MAP_SHARED,
+              f_desc, 0);
+  if (data == MAP_FAILED) {
+    std::string err = std::system_category().message(errno);
+    close(f_desc);
+    return std::unexpected<image_error>(image_error::IO(
+        -1, err_severity::ERROR,
+        std::format("Failed to map file: {}", file_path.c_str()), err));
+  }
+  close(f_desc);
+  return std::make_pair(data, static_cast<size_t>(sbuf.st_size));
+}
+
 std::expected<bool, image_error> tiff_exporter(fs::path out_dir, int suffix,
                                                std_image image) {
   Exiv2::ExifData &raw_exif = get_internal_context(image).exif_data_;

@@ -75,6 +75,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(libtiff)
 
 find_package(exiv2 REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # Find system packages for JPEG and LibRaw
 find_package(JPEG REQUIRED)
@@ -91,6 +92,7 @@ target_link_libraries(bpp_lib PRIVATE
     JPEG::JPEG      # libjpeg (system)
     ${LibRaw_LIBRARIES}
     ${Exiv2_LIBRARIES} # LibRaw
+    OpenSSL::Crypto
 )
 
 # Add png library with proper target

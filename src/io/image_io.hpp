@@ -16,3 +16,6 @@ sort_file(std::vector<fs::path> &files);
 std::expected<std::vector<std::pair<void *, size_t>>, image_error>
 file_loader(std::vector<fs::path> file_paths,
             std::vector<std::pair<fs::path, image_error>> &failed);
+
+std::expected<std::pair<void *, size_t>, image_error>
+load_file(fs::path file_path);

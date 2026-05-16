@@ -11,6 +11,7 @@
 #include <openssl/evp.h>
 #include <openssl/types.h>
 #include <sstream>
+#include <sys/mman.h>
 #include <utility>
 #include <vector>
 
@@ -75,7 +76,12 @@ protected:
     }
   }
 
-  void TearDown() override { fs::remove_all(export_dir); }
+  void TearDown() override {
+    fs::remove_all(export_dir);
+    for (auto &t_case : t_cases) {
+      munmap(t_case.file_mem, t_case.file_size);
+    }
+  }
 };
 
 TEST_F(im_handler_tf, file_copier_test) {
