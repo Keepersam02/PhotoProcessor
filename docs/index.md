@@ -2,4 +2,4 @@
 Welcome to the development log
 
 ## Case Studies
-* Architectural Design
+* [Image IO Structure V1](design_planning/image_io.md)
