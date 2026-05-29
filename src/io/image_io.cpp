@@ -66,43 +66,6 @@ find_files(const fs::path path) {
  * image_error with the reason why.
  * TODO remove jpeg and png non support once supported
  */
-std::expected<std::vector<fs::path>, image_error>
-sort_file(std::vector<fs::path> &files) {
-  std::vector<fs::path> rej_files;
-  for (size_t i = 0; i < files.size(); i++) {
-    fs::path file = files.at(i);
-    auto im_format_ret = image_format(file);
-    if (!im_format_ret) {
-      rej_files.push_back(file);
-      files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
-      i--;
-      continue;
-    }
-    auto im_format = im_format_ret.value();
-
-    if (im_format == image_type::INTER_IM) {
-      auto is_raw_r = is_raw_file(file);
-      if (!is_raw_r || !is_raw_r.value()) {
-        rej_files.push_back(file);
-        files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
-        i--;
-      }
-      continue;
-    } else if (im_format == image_type::PNG_FILE ||
-               im_format == image_type::JPEG_FILE) {
-      rej_files.push_back(file);
-      files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
-      i--;
-      continue;
-    } else if (im_format != image_type::TIFF_FILE) {
-      rej_files.push_back(file);
-      files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
-      i--;
-      continue;
-    }
-  }
-  return rej_files;
-}
 
 std::expected<std::vector<std::pair<void *, size_t>>, image_error>
 file_loader(std::vector<fs::path> file_paths,

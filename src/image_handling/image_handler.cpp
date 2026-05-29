@@ -14,10 +14,10 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-
+/*
 void copy_files(std::vector<fs::path> &file_paths,
                 std::vector<fs::path> &dest_dirs, uint8_t max_threads) {}
-
+*/
 std::expected<bool, image_error> file_copier(void *file, size_t file_size,
                                              fs::path src, fs::path dest_dir) {
   const auto file_name = src.filename();
