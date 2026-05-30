@@ -73,7 +73,7 @@ std::expected<image_type, image_error> valid_file(std::string path) {
  * raw file. IF it is png or JPEG return appropriate If it is none then check if
  * libraw can read it and return appropriately
  */
-std::expected<image_type, image_error> image_format(std::string path) {
+std::expected<image_type, image_error> image_format(fs::path path) {
   if (path.empty()) {
     return std::unexpected<image_error>{image_error::IO(
         0, err_severity::DEBUG,
