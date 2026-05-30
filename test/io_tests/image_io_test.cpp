@@ -1,5 +1,8 @@
 #include "../../src/io/image_io.hpp"
 #include "../../src/io/image_io_error.hpp"
+#include "../../src/io/image_ver.hpp"
+#include "openssl/evp.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cstddef>
 #include <filesystem>
