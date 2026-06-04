@@ -14,6 +14,7 @@
 #include <optional>
 #include <png.h>
 #include <string>
+#include <system_error>
 #include <tiff.h>
 #include <tiffio.h>
 #include <utility>
@@ -49,7 +50,8 @@ sort_file(std::vector<fs::path> &files) {
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
       i--;
       continue;
-    } else if (im_format != image_type::TIFF_FILE) {
+    } else if (im_format == image_type::TIFF_FILE) {
+    } else {
       rej_files.push_back(file);
       files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
       i--;
@@ -59,7 +61,7 @@ sort_file(std::vector<fs::path> &files) {
   return rej_files;
 }
 
-std::expected<image_type, image_error> valid_file(std::string path) {
+std::expected<image_type, image_error> valid_file(const std::string &path) {
   fs::path file_path(path);
   if (!fs::exists(file_path) || !fs::is_regular_file(path)) {
     return FILE_DOES_NOT_EXIST;
@@ -73,7 +75,7 @@ std::expected<image_type, image_error> valid_file(std::string path) {
  * raw file. IF it is png or JPEG return appropriate If it is none then check if
  * libraw can read it and return appropriately
  */
-std::expected<image_type, image_error> image_format(fs::path path) {
+std::expected<image_type, image_error> image_format(const fs::path &path) {
   if (path.empty()) {
     return std::unexpected<image_error>{image_error::IO(
         0, err_severity::DEBUG,
@@ -119,12 +121,13 @@ std::expected<image_type, image_error> image_format(fs::path path) {
 /*
  * Determine if a tiff file appears to be a raw file
  */
-std::expected<bool, image_error> is_raw_tiff(std::string path) {
+std::expected<bool, image_error> is_raw_tiff(const fs::path &path) {
   TIFF *file = TIFFOpen(path.c_str(), "r");
   if (file == NULL) {
-    auto err =
-        image_error::IO_LTIFF(0, err_severity::DEBUG, "null file: " + path,
-                              "occured in: is_raw_tiff");
+    const auto err_m = std::system_category().message(errno);
+    auto err = image_error::IO_LTIFF(0, err_severity::DEBUG,
+                                     std::format("null file: {}", path.c_str()),
+                                     "occured in: is_raw_tiff");
     return std::unexpected<image_error>{err};
   }
   uint32_t count = 0;
@@ -145,7 +148,7 @@ std::expected<bool, image_error> is_raw_tiff(std::string path) {
   return true;
 }
 
-std::expected<bool, image_error> is_raw_file(std::string path) {
+std::expected<bool, image_error> is_raw_file(const fs::path &path) {
   LibRaw raw;
   int res = raw.open_file(path.c_str());
   if (res != 0) {
