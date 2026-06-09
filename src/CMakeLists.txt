@@ -41,7 +41,8 @@ FetchContent_MakeAvailable(libpng)
 # Fetch libtiff
 FetchContent_Declare(
   libtiff
-  URL https://gitlab.com/libtiff/libtiff/-/archive/v4.7.1/libtiff-v4.7.1.zip
+  GIT_REPOSITORY https://gitlab.com/libtiff/libtiff.git
+  GIT_TAG        v4.7.0
 )
 FetchContent_MakeAvailable(libtiff)
 
@@ -56,7 +57,8 @@ FetchContent_MakeAvailable(SQLiteCpp)
 # Fetch Exiv2
 FetchContent_Declare(
   exiv2
-  URL https://github.com/Exiv2/exiv2/archive/refs/tags/v0.28.7.zip
+  GIT_REPOSITORY https://github.com/Exiv2/exiv2.git
+  GIT_TAG        v0.28.7
 )
 FetchContent_MakeAvailable(exiv2)
 

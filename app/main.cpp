@@ -13,17 +13,20 @@
 #include "screens/pipeline_screen.hpp"
 #include "screens/run_screen.hpp"
 
+#include "../src/db/database.hpp"
+#include "../src/db/schema.hpp"
+#include "../src/db/models/batch.hpp"
+
 using namespace ftxui;
 
-// ── main ──────────────────────────────────────────────────────────
+// TODO: wire up DB
 
-int main() {
+
+void setupCLI(){
 
   AppState state;
 
-  // TODO: wire up DB
-
-  auto screen    = ScreenInteractive::Fullscreen();
+  auto screen = ScreenInteractive::Fullscreen();
   
   // 0 for Main Menu
   // 1 for Batches
@@ -45,4 +48,16 @@ int main() {
   }, &active_tab);
 
   screen.Loop(root);
+
+}
+
+void setupDB(){
+  SQLite::Database& db = Database::getInstance().get();
+  Schema::initialize(db);
+
+}
+
+// ── main ──────────────────────────────────────────────────────────
+int main() {
+  setupCLI();
 }
