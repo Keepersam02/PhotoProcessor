@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef RUN_SCREEN_H
+#define RUN_SCREEN_H
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
 #include "../app_state.hpp"
@@ -54,3 +58,5 @@ Component MakeRunScreen(AppState& state, int& active_tab) {
     });
   });
 }
+
+#endif

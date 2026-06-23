@@ -1,24 +1,51 @@
 #pragma once
+#ifndef APP_STATE_H
+#define APP_STATE_H
+
 #include <vector>
+#include <string>
+
+
 #include "db/database.hpp"
 #include "db/schema.hpp"
 #include "db/models/batch.hpp"
+#include "db/database.hpp"
 
 /*
-    NEED FROM DB
-1. Batches
-2. Pipelines
-3. Operations
-4. Files
+    data needs to be displayed:
+    from db:
+ - Batches
+ - Pipelines
+ - Operations
+
+
+    from User:
+ - Files
+*/
+
+
+/*
+ * App State:
+ * Holds mutable data to be displayed
+ * 
 */
 struct AppState {
-    BatchRepo* batchRepo = nullptr;
-    std::vector<Batch> batches;
 
-    int selected_batch    = 0;
-    int selected_pipeline = 0;
+    // Batch Table (connector to DB)
+    BatchRepo batchRepo = Database::getInstance().get();
+
+    // vector of all batches
+    std::vector<Batch> batches = batchRepo.all();
+
+    // string for input from user
+    std::string input_string;
+
+    // Batch struct for user to edit
+    Batch input_batch;
 
     void refresh() {
-        if (batchRepo) batches = batchRepo->all();
+        batches = batchRepo.all();
     }
 };
+
+#endif

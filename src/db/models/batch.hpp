@@ -1,14 +1,26 @@
 #pragma once
+#ifndef BATCH_H
+#define BATCH_H
+
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <string>
 #include <vector>
+#include <chrono>
+#include <iostream>
+
 
 struct Batch {
+    // DB variables
     int         id;
     std::string name;
-    long        dateCreated;
-    long        dateModified;
+    int64_t     dateCreated;
+    int64_t     dateModified;
     int         status;
+
+    // CLI variables
+    bool        is_selected;
+    std::string dateCreatedFormatted;
+    std::string dateModifiedFormatted;
 };
 
 enum class BatchStatus {
@@ -34,3 +46,5 @@ public:
 private:
     SQLite::Database& db_;
 };
+
+#endif

@@ -1,8 +1,12 @@
 #pragma once
+#ifndef DATABASE_H
+#define DATABASE_H
+
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <memory>
 #include <string>
 
+//TODO rule of 5/3
 class Database {
 public:
     // reference to DB Class object
@@ -21,3 +25,5 @@ private:
     // maybe change to normal pointer?
     std::unique_ptr<SQLite::Database> db_; // DB reference
 };
+
+#endif

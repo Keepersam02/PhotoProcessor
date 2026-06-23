@@ -1,4 +1,7 @@
 #pragma once
+#ifndef BATCH_SCREEN_H
+#define BATCH_SCREEN_H
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
 #include "../app_state.hpp"
@@ -22,7 +25,7 @@ using namespace ftxui;
 // Batches screen
 Component MakeBatchScreen(AppState& state, int& active_tab) {
 
-  auto btn_create    = Button("  Create    ", [&]{  });
+  auto btn_create    = Button("  Create    ", [&]{ active_tab = 4; });
   auto btn_edit      = Button("  Edit      ", [&]{  });
   auto btn_delete    = Button("  Delete    ", [&]{  });
   auto btn_back      = Button("  Back      ", [&]{ active_tab = 0; });
@@ -73,3 +76,5 @@ Component MakeBatchScreen(AppState& state, int& active_tab) {
     });
   });
 }
+
+#endif

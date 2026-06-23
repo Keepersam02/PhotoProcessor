@@ -1,7 +1,13 @@
 #pragma once
+#ifndef MAIN_SCREEN_H
+#define MAIN_SCREEN_H
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
+
+#include "../Containers/batch_container.hpp"
 #include "../app_state.hpp"
+
 
 using namespace ftxui;
 
@@ -18,12 +24,19 @@ Component MakeMainScreen(AppState& state, int& active_tab,
   auto btn_run       = Button("  Run       ", [&]{ active_tab = 3; });
   auto btn_exit      = Button("  Exit      ", exit_fn);
 
-  // Allows you to traverse through options with up and down arrows
-  auto menu = Container::Vertical({
-    btn_batches, btn_pipelines, btn_run, btn_exit
+
+  Component batch_container = GetBatchContainer(state);
+
+
+  // button menu
+  auto menu = Container::Horizontal({
+    Container::Vertical({
+      btn_batches, btn_pipelines, btn_run, btn_exit
+    }),
+    batch_container
   });
 
-  // Draws out menu screen
+
   return Renderer(menu, [=, &state]{
     return vbox({
       
@@ -48,13 +61,11 @@ Component MakeMainScreen(AppState& state, int& active_tab,
         vbox({
 
           // Title for Batch List
-          text("Batch List") | center | border,
+          text("Batch List") | border,
 
           // List of Batches
           vbox({
-            vbox({
-              text(" TODO: \nBatch list here "),
-            }) | border,
+            batch_container->Render() | border | flex
           })
 
         }) | flex,
@@ -64,3 +75,5 @@ Component MakeMainScreen(AppState& state, int& active_tab,
     });
   });
 }
+
+#endif

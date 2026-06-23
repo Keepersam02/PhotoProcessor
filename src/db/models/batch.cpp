@@ -2,7 +2,9 @@
 #include <stdexcept>
 
 /*
-Fancy way:
+ * (Fancy way)
+ *
+ * 
 */
 BatchRepo::BatchRepo(SQLite::Database& db) : db_(db) {}
 
