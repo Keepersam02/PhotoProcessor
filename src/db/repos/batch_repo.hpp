@@ -13,12 +13,12 @@ class BatchRepo {
 public:
     BatchRepo(SQLite::Database& db);
 
-    void              insert(const Batch& b);
-    Batch             findById(int id);
+    void               insert(const Batch& b);
+    Batch              findById(int id);
     std::vector<Batch> all();
-    void              updateStatus(int id, BatchStatus status);
-    void              updateModified(int id, long dateModified);
-    void              remove(int id);
+    void               updateStatus(int id, BatchStatus status);
+    void               updateModified(int id, int64_t dateModified);
+    void               remove(int id);
 
 private:
     SQLite::Database& db_;

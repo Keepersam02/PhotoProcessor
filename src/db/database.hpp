@@ -6,7 +6,12 @@
 #include <memory>
 #include <string>
 
-//TODO rule of 5/3
+
+/*
+ * Database class
+ * 
+ * 
+ */
 class Database {
 public:
     // reference to DB Class object
@@ -22,7 +27,6 @@ public:
 private:
     Database();
     // unique pointer auto deletes when it 
-    // maybe change to normal pointer?
     std::unique_ptr<SQLite::Database> db_; // DB reference
 };
 

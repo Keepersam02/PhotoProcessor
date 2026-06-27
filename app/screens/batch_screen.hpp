@@ -8,6 +8,17 @@
 
 using namespace ftxui;
 
+
+
+/*
+  TODO: 
+  EDIT:
+  - can only edit 1 at a time
+  Delete:
+  - select/deselect all
+
+*/
+
 /*
   Create: 
   enter name and go into create screen
@@ -30,9 +41,21 @@ Component MakeBatchScreen(AppState& state, int& active_tab) {
   auto btn_delete    = Button("  Delete    ", [&]{  });
   auto btn_back      = Button("  Back      ", [&]{ active_tab = 0; });
 
+
+  auto sidebar = Container::Vertical({
+    btn_create,
+    btn_edit,
+    btn_delete,
+    btn_back
+  });
+
+  auto batch_table = std::make_shared<BatchTable>(state);
+
+
   // Allows you to traverse through options with up and down arrows
-  auto menu = Container::Vertical({
-    btn_create, btn_edit, btn_delete, btn_back
+  auto menu = Container::Horizontal({
+    sidebar,
+    batch_table
   });
 
   // Draws out menu screen
@@ -63,11 +86,7 @@ Component MakeBatchScreen(AppState& state, int& active_tab) {
           text("Batch List") | center | border,
 
           // List of Batches
-          vbox({
-            vbox({
-              text(" TODO: \nBatch list here "),
-            }) | border,
-          })
+          batch_table->Render()
 
         }) | flex,
 

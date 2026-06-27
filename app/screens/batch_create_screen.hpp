@@ -13,9 +13,20 @@
 
 #include "../app_state.hpp"
 #include "batch_screen.hpp"
+#include "../components/batch_table.hpp"
 #include "../../src/db/models/batch.hpp"
+#include "../../src/db/repos/batch_repo.hpp"
 
 using namespace ftxui;
+
+
+/*
+TODO:
+make button always be on enter name
+unique names
+
+
+*/
 
 /*
   create/(edit?) a batch screen
@@ -37,15 +48,25 @@ using namespace ftxui;
 */
 Component MakeBatchCreateScreen(AppState& state, int& active_tab) {   
   
+  auto batch_table = std::make_shared<BatchTable>(state);
+
   // Save batch to db
   auto btn_save    = Button("    Save    ", [&]{
 
     // Get system time:
-    auto now = std::chrono::system_clock::now();
-    state.input_batch.dateCreated = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+    time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+    // Get readable time
+    char buffer[32];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::gmtime(&t));
+
 
     // Assign system time to date created and modified
-    state.input_batch.dateModified = state.input_batch.dateCreated;
+    state.input_batch.dateModified = static_cast<int64_t>(t);
+    state.input_batch.dateCreated = static_cast<int64_t>(t);
+
+    state.input_batch.dateCreatedFormatted = buffer;
+    state.input_batch.dateModifiedFormatted = buffer;
 
     // save name string and reset it in appstate
     state.input_batch.name = state.input_string;
@@ -59,48 +80,59 @@ Component MakeBatchCreateScreen(AppState& state, int& active_tab) {
 
     // go back to batch screen
     active_tab = 1;
+
+    //refresh batch table
+    state.refresh();
   });
 
+
+
+
+  
   auto btn_cancel  = Button("    Cancel  ", [&]{ active_tab = 1; state.input_string = "";});
   auto btn_exit    = Button("    Exit    ", [&]{ active_tab = 1; state.input_string = "";});
 
   // TODO: unique name check?
   // input string:
-  Component input = Input(&state.input_string, "New Batch") | bold;
+  Component input = Input(&state.input_string, " Enter Name") | bold;
 
   // filter out newline chars
   input |= CatchEvent([&](Event event) {
     return (event.character()[0] == '\n');
   });
 
-  
-
+  auto sidebar = Container::Vertical({
+    btn_save,
+    btn_cancel,
+    btn_exit
+  });
   // Menu navigation
   auto menu = Container::Vertical({
     input,
-    Container::Horizontal({btn_save, btn_cancel, btn_exit}),
-    // Container::Horizontal({batch_container})
+    Container::Horizontal({
+      sidebar, batch_table
+    })
   });
+
 
 
   // Draws out menu screen
   return Renderer(menu, [=, &state]{
     return vbox({
-
       // Batch name input
-      hbox(input->Render()) | border | size(HEIGHT,EQUAL, 3)| size(WIDTH,EQUAL, 50) | center,
-      separator(),
-
-      // buttons
       hbox({
-        btn_save->Render(),
-        btn_cancel->Render(),
-        btn_exit->Render(),
-      }) | center,
+        text("Batch Name:"),
+        input->Render() | xflex  //| size(HEIGHT,EQUAL, 3)
+      }) | border | xflex,
 
       // List of batches and pipelines
       hbox({
-        // batch_container->Render() | vscroll_indicator | frame | size(HEIGHT, LESS_THAN, 10) | border,
+        vbox({
+          btn_save->Render(),
+          btn_cancel->Render(),
+          btn_exit->Render(),
+        }) | border | yflex,
+
       })
     });
   });

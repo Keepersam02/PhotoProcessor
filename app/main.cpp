@@ -17,10 +17,16 @@
 #include "../src/db/database.hpp"
 #include "../src/db/schema.hpp"
 #include "../src/db/models/batch.hpp"
+#include "../src/db/repos/batch_repo.hpp"
 
 using namespace ftxui;
 
-// TODO: wire up DB
+/*
+high level TODO:
+
+- optimize pulling from db. only pull data that we are displaying/using
+
+*/
 
 
 void setupCLI(){
@@ -36,11 +42,11 @@ void setupCLI(){
   // 4 for batch edit/create
   int  active_tab = 0; 
 
-  Component main_screen     = MakeMainScreen(state, active_tab, screen.ExitLoopClosure());
-  Component batch_screen           = MakeBatchScreen(state, active_tab);
-  Component pipeline_screen          = MakePipelineScreen(state, active_tab);
-  Component run_screen               = MakeRunScreen(state, active_tab);
-  Component batch_create_screen      = MakeBatchCreateScreen(state, active_tab);
+  Component main_screen         = MakeMainScreen(state, active_tab, screen.ExitLoopClosure());
+  Component batch_screen        = MakeBatchScreen(state, active_tab);
+  Component pipeline_screen     = MakePipelineScreen(state, active_tab);
+  Component run_screen          = MakeRunScreen(state, active_tab);
+  Component batch_create_screen = MakeBatchCreateScreen(state, active_tab);
 
   // root hold all the screens
   auto root = Container::Tab({
@@ -58,7 +64,6 @@ void setupCLI(){
 void setupDB(){
   SQLite::Database& db = Database::getInstance().get();
   Schema::initialize(db);
-
 }
 
 // ── main ──────────────────────────────────────────────────────────

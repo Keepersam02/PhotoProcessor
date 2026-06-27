@@ -1,12 +1,8 @@
-#include "../db/models/batch.hpp"
+#include "../models/batch.hpp"
 #include "batch_repo.hpp"
 #include <stdexcept>
 
-/*
- * (Fancy way)
- *
- * 
-*/
+
 BatchRepo::BatchRepo(SQLite::Database& db) : db_(db) {}
 
 void BatchRepo::insert(const Batch& b) {
@@ -51,7 +47,7 @@ void BatchRepo::updateStatus(int id, BatchStatus status) {
     q.exec();
 }
 
-void BatchRepo::updateModified(int id, long dateModified) {
+void BatchRepo::updateModified(int id, int64_t dateModified) {
     SQLite::Statement q(db_,
         "UPDATE batch SET date_modified = ? WHERE id = ?");
     q.bind(1, dateModified);

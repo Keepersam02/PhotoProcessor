@@ -1,19 +1,12 @@
 #pragma once
-#ifndef BATCH_H
-#define BATCH_H
+#ifndef PIPELINE_H
+#define PIPELINE_H
 
 #include <string>
 #include <iostream>
 
 
-/*
-TODO:
-
-- figure out enum 
-
-*/
-
-struct Batch {
+struct Pipeline {
     // DB variables
     int32_t         id;
     std::string     name;
@@ -26,13 +19,5 @@ struct Batch {
     std::string     dateCreatedFormatted;
     std::string     dateModifiedFormatted;
 };
-
-enum class BatchStatus {
-    Pending    = 0,
-    Processing = 1,
-    Complete   = 2,
-    Failed     = -1
-};
-
 
 #endif

@@ -1,11 +1,14 @@
 #src
 add_library(bpp_lib
-  temp.cpp
   io/image_io.cpp
   io/image_io.hpp
   db/database.cpp
+  db/database.hpp
   db/schema.cpp
-  db/models/batch.cpp
+  db/schema.hpp
+  db/models/batch.hpp
+  db/repos/batch_repo.cpp
+  db/repos/batch_repo.hpp
 )
 
 target_compile_options(bpp_lib PRIVATE

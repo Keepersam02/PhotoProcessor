@@ -4,8 +4,9 @@
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
+#include <ftxui/dom/table.hpp>
 
-#include "../Containers/batch_container.hpp"
+#include "../components/batch_table.hpp"
 #include "../app_state.hpp"
 
 
@@ -25,15 +26,20 @@ Component MakeMainScreen(AppState& state, int& active_tab,
   auto btn_exit      = Button("  Exit      ", exit_fn);
 
 
-  Component batch_container = GetBatchContainer(state);
+  auto batch_table = std::make_shared<BatchTable>(state);
 
+  auto sidebar = Container::Vertical({
 
+    btn_batches,
+    btn_pipelines,
+    btn_run,
+    btn_exit
+
+  });
   // button menu
   auto menu = Container::Horizontal({
-    Container::Vertical({
-      btn_batches, btn_pipelines, btn_run, btn_exit
-    }),
-    batch_container
+    sidebar,
+    batch_table
   });
 
 
@@ -65,14 +71,14 @@ Component MakeMainScreen(AppState& state, int& active_tab,
 
           // List of Batches
           vbox({
-            batch_container->Render() | border | flex
+            batch_table->Render()
           })
 
         }) | flex,
 
       }) | flex,
 
-    });
+    }) | flex;
   });
 }
 

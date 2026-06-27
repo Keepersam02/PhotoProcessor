@@ -1,5 +1,11 @@
 #include "db/schema.hpp"
 
+/*
+ * Todo: 
+ * unique names (for batches)
+ * 
+*/
+
 void Schema::initialize(SQLite::Database& db) {
     db.exec(R"(
         CREATE TABLE IF NOT EXISTS batch (
@@ -9,9 +15,7 @@ void Schema::initialize(SQLite::Database& db) {
             date_modified INTEGER NOT NULL,
             status        INTEGER NOT NULL DEFAULT 0
         );
-    )");
-}
-/*
+        
         CREATE TABLE IF NOT EXISTS pipeline (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             name          TEXT    NOT NULL UNIQUE,
@@ -47,5 +51,3 @@ void Schema::initialize(SQLite::Database& db) {
         );
     )");
 }
-
-*/

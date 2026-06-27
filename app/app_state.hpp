@@ -5,11 +5,11 @@
 #include <vector>
 #include <string>
 
-
-#include "db/database.hpp"
-#include "db/schema.hpp"
-#include "db/models/batch.hpp"
-#include "db/database.hpp"
+#include "../src/db/database.hpp"
+#include "../src/db/models/batch.hpp"
+#include "../src/db/repos/batch_repo.hpp"
+#include "../src/db/models/pipeline.hpp"
+#include "../src/db/repos/pipeline_repo.hpp"
 
 /*
     data needs to be displayed:
@@ -23,25 +23,24 @@
  - Files
 */
 
-
 /*
  * App State:
  * Holds mutable data to be displayed
  * 
-*/
+ */
 struct AppState {
 
-    // Batch Table (connector to DB)
-    BatchRepo batchRepo = Database::getInstance().get();
-
-    // vector of all batches
-    std::vector<Batch> batches = batchRepo.all();
-
-    // string for input from user
+    // Temp data:
     std::string input_string;
-
-    // Batch struct for user to edit
     Batch input_batch;
+    Pipeline input_pipeline;
+
+    // DB Repos:
+    BatchRepo batchRepo = Database::getInstance().get();
+    // PipelineRepo pipelineRepo= 
+
+    // Display data:
+    std::vector<Batch> batches = batchRepo.all();
 
     void refresh() {
         batches = batchRepo.all();
