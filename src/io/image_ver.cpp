@@ -8,10 +8,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <iostream>
 #include <libraw/libraw_const.h>
-#include <memory>
-#include <optional>
 #include <png.h>
 #include <string>
 #include <system_error>
@@ -22,6 +19,11 @@
 
 namespace fs = std::filesystem;
 
+/*
+ * Higher level file that takes a set of filepaths and sorts them into supported
+ * and unsupported.  unsupported files are paired with an image_error for
+ * context even if for many cases it may be overkill.
+ */
 std::expected<std::vector<fs::path>, image_error>
 sort_file(std::vector<fs::path> &files) {
   std::vector<fs::path> rej_files;
@@ -37,8 +39,8 @@ sort_file(std::vector<fs::path> &files) {
     auto im_format = im_format_ret.value();
 
     if (im_format == image_type::INTER_IM) {
-      auto is_raw_r = is_raw_file(file);
-      if (!is_raw_r || !is_raw_r.value()) {
+      const auto is_raw_r = is_raw_file(file);
+      if (!is_raw_r || !is_raw_r.value().first) {
         rej_files.push_back(file);
         files.erase(files.begin() + static_cast<std::ptrdiff_t>(i));
         i--;
@@ -61,6 +63,7 @@ sort_file(std::vector<fs::path> &files) {
   return rej_files;
 }
 
+// checks that a file exists
 std::expected<image_type, image_error> valid_file(const std::string &path) {
   fs::path file_path(path);
   if (!fs::exists(file_path) || !fs::is_regular_file(path)) {
@@ -121,7 +124,8 @@ std::expected<image_type, image_error> image_format(const fs::path &path) {
 /*
  * Determine if a tiff file appears to be a raw file
  */
-std::expected<bool, image_error> is_raw_tiff(const fs::path &path) {
+std::expected<std::pair<bool, std::string>, image_error>
+is_raw_tiff(const fs::path &path) {
   TIFF *file = TIFFOpen(path.c_str(), "r");
   if (file == NULL) {
     const auto err_m = std::system_category().message(errno);
@@ -142,17 +146,20 @@ std::expected<bool, image_error> is_raw_tiff(const fs::path &path) {
 
   if (!has_cfa || !has_pat_dim || !has_active_field) {
     TIFFClose(file);
-    return false;
+    return std::make_pair(false, "image missing cfa, repeat_pattern_dim, or "
+                                 "active_field and thus likely not a raw tiff");
   }
   TIFFClose(file);
-  return true;
+  return std::make_pair(true, "");
 }
 
-std::expected<bool, image_error> is_raw_file(const fs::path &path) {
+// checks if a file can be opened by libraw thus making it a supported raw file
+std::expected<std::pair<bool, std::string>, image_error>
+is_raw_file(const fs::path &path) {
   LibRaw raw;
   int res = raw.open_file(path.c_str());
   if (res != 0) {
-    return false;
+    return std::make_pair(false, libraw_strerror(res));
   }
-  return true;
+  return std::make_pair(true, "");
 }

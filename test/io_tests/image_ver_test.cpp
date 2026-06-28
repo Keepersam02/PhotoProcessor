@@ -85,7 +85,6 @@ private:
           return;
         }
         image_files.push_back(t_case);
-        raw_files.push_back(t_case);
       } else if (t_case.is_image && !t_case.is_raw && t_case.fake_tiff) {
         const bool res = fake_nraw_tiff_writer(t_case);
         if (!res) {
@@ -273,7 +272,8 @@ TEST_F(image_ver_tf, is_raw_tiff) {
     EXPECT_EQ(!res.has_value(), t_case.ret_err);
     if (t_case.ret_err) {
     }
-    EXPECT_EQ(res.value(), t_case.is_raw);
+    const auto &raw_pair = res.value();
+    EXPECT_EQ(raw_pair.first, t_case.is_raw) << raw_pair.second;
   }
 }
 
@@ -284,6 +284,7 @@ TEST_F(image_ver_tf, is_raw_file) {
     EXPECT_EQ(!res.has_value(), t_case.ret_err) << t_case.name;
     if (t_case.ret_err) {
     }
-    EXPECT_EQ(res.value(), t_case.is_raw) << t_case.name;
+    const auto &raw_pair = res.value();
+    EXPECT_EQ(raw_pair.first, t_case.is_raw) << t_case.name;
   }
 }

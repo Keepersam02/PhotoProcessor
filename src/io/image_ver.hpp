@@ -3,6 +3,7 @@
 #include "image_io_error.hpp"
 #include <expected>
 #include <filesystem>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -23,5 +24,7 @@ enum image_type {
 std::expected<std::vector<fs::path>, image_error>
 sort_file(std::vector<fs::path> &files);
 std::expected<image_type, image_error> image_format(const fs::path &path);
-std::expected<bool, image_error> is_raw_tiff(const fs::path &path);
-std::expected<bool, image_error> is_raw_file(const fs::path &path);
+std::expected<std::pair<bool, std::string>, image_error>
+is_raw_tiff(const fs::path &path);
+std::expected<std::pair<bool, std::string>, image_error>
+is_raw_file(const fs::path &path);

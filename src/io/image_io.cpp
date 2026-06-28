@@ -1,5 +1,5 @@
+#include "image_io.hpp"
 #include "image_io_error.hpp"
-#include "image_ver.hpp"
 #include "tiff.h"
 #include "types/image.hpp"
 #include "types/image_internal.hpp"
@@ -66,54 +66,26 @@ find_files(const fs::path path) {
  * image_error with the reason why.
  * TODO remove jpeg and png non support once supported
  */
-
 std::expected<std::vector<std::pair<void *, size_t>>, image_error>
 file_loader(std::vector<fs::path> file_paths,
             std::vector<std::pair<fs::path, image_error>> &failed) {
   std::vector<std::pair<void *, size_t>> files;
-  int f_desc;
   for (const auto &path : file_paths) {
-    f_desc = open(path.c_str(), O_RDONLY);
-    if (f_desc == -1) {
-      std::string err = std::system_category().message(errno);
-      failed.push_back(
-          std::make_pair(path, image_error::IO(-1, err_severity::ERROR,
-                                               "failed to open file", err)));
+    const auto res = load_file(path);
+    if (!res) {
+      failed.push_back(std::make_pair(path, res.error()));
       continue;
     }
-    void *data;
-
-    struct stat sbuf;
-    if (stat(path.c_str(), &sbuf) == -1) {
-      failed.push_back(std::make_pair(
-          path, image_error::IO(0, err_severity::WARNING,
-                                "stat failed to get required file info", "")));
-      close(f_desc);
-      continue;
-    }
-
-    data = mmap(nullptr, static_cast<size_t>(sbuf.st_size), PROT_READ,
-                MAP_SHARED, f_desc, 0);
-    if (data == MAP_FAILED) {
-      failed.push_back(std::make_pair(
-          path,
-          image_error::IO(0, err_severity::WARNING,
-                          std::format("failed to create map for memory"), "")));
-      close(f_desc);
-      continue;
-    }
-    files.push_back(std::make_pair(data, sbuf.st_size));
-    close(f_desc);
+    files.push_back(res.value());
   }
   return files;
 }
 
 std::expected<std::pair<void *, size_t>, image_error>
-load_file(fs::path file_path) {
+load_file(const fs::path &file_path) {
   auto f_desc = open(file_path.c_str(), O_RDONLY);
   if (f_desc == -1) {
     std::string err = std::system_category().message(errno);
-    close(f_desc);
     return std::unexpected<image_error>(image_error::IO(
         -1, err_severity::ERROR,
         std::format("Failed to open {}", file_path.c_str()), err));
