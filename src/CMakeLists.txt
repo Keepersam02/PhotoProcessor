@@ -6,6 +6,7 @@ add_library(bpp_lib
   io/image_io.hpp
   image_handling/image_handler.cpp
   image_handling/image_handler.hpp
+  image_handling/file_pool.hpp
 )
 
 

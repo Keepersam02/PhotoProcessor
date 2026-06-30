@@ -2,6 +2,7 @@ add_executable(bpp_tests
   ./io_tests/image_ver_test.cpp
   ./src_test/image_handle_test/image_handler_test.cpp
   ./io_tests/image_io_test.cpp
+  ./src_test/file_pool_test.cpp
 )
 
 target_compile_options(bpp_tests PRIVATE -g -O0)
