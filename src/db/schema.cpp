@@ -10,7 +10,7 @@ void Schema::initialize(SQLite::Database& db) {
     db.exec(R"(
         CREATE TABLE IF NOT EXISTS batch (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            name          TEXT    NOT NULL,
+            name          TEXT    NOT NULL UNIQUE,
             date_created  INTEGER NOT NULL,
             date_modified INTEGER NOT NULL,
             status        INTEGER NOT NULL DEFAULT 0
@@ -44,10 +44,11 @@ void Schema::initialize(SQLite::Database& db) {
             pipeline_id INTEGER NOT NULL REFERENCES pipeline(id)
         );
 
-        CREATE TABLE IF NOT EXISTS operation_pipeline_map (
+        CREATE TABLE IF NOT EXISTS pipeline_operation_map (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             pipeline_id  INTEGER NOT NULL REFERENCES pipeline(id),
-            operation_id INTEGER NOT NULL REFERENCES operation(id)
+            operation_id INTEGER NOT NULL REFERENCES operation(id),
+            position     INTEGER NOT NULL UNIQUE
         );
     )");
 }

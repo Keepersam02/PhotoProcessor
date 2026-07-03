@@ -1,0 +1,2 @@
+#!/bin/bash
+./build/app/bpp_app

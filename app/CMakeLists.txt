@@ -4,6 +4,8 @@
 
 add_executable(bpp_app
   main.cpp
+  app.cpp
+  app_state.cpp
 )
 
 target_compile_options(bpp_app PRIVATE
@@ -31,11 +33,10 @@ target_include_directories(bpp_app PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 
 target_link_libraries(bpp_app PRIVATE
-    bpp_lib
-    -Wl,--start-group
-    ftxui::screen
-    ftxui::dom
-    ftxui::component
-    -Wl,--end-group
-
+  bpp_lib
+  -Wl,--start-group
+  ftxui::screen
+  ftxui::dom
+  ftxui::component
+  -Wl,--end-group
 )

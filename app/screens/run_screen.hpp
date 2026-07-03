@@ -10,53 +10,63 @@
 using namespace ftxui;
 
 // Run screen
-Component MakeRunScreen(AppState& state, int& active_tab) {
-  auto btn_run       = Button("  Run       ", [&]{ });
-  auto btn_back      = Button("  Back      ", [&]{ active_tab = 0; });
+Component RunScreen(App& app) {
 
-  // Allows you to traverse through options with up and down arrows
-  auto menu = Container::Vertical({
-    btn_run, btn_back
-  });
+    auto batch_list = std::make_shared<BatchList>(app.state_);
 
-  // Draws out menu screen
-  return Renderer(menu, [=, &state]{
-    return vbox({
-      
-      // Title
-      text("Run Batches") | bold | center | border | size(HEIGHT, EQUAL, 3),
-      
-      // Boxes for: 
-      // Options | Batch List
-      hbox({
+    auto btn_run_all             = Button("  Run All      ", [&]{ });
+    auto btn_run_selected        = Button("  Run Selected ", [&]{ });
+    auto btn_select_all          = Button("  Select All   ", [&]{ app.selectAllBatches();});
+    auto btn_deselect_all        = Button("  De-Select All", [&]{ app.deSelectAllBatches();});
+    auto btn_back                = Button("  Back         ", [&]{ app.active_tab_ = 0; });
 
-        // Left: Options Box
-        vbox({
-          btn_run->Render(),
-          btn_back->Render(),  
-        }) | border | size(WIDTH,EQUAL,30),
+    // Allows you to traverse through options with up and down arrows
+    auto sidebar = Container::Vertical({
+        btn_run_all,
+        btn_run_selected,
+        btn_select_all,
+        btn_deselect_all,
+        btn_back
+    });
 
-        separator(),
+    auto menu = Container::Horizontal({
+        sidebar, batch_list
+    });
 
-        // Right: Batch List box
-        vbox({
+    // Draws out menu screen
+    return Renderer(menu, [=, &app]{
+        return vbox({
+        
+        // Title
+        text("Run Batches") | bold | center | border | size(HEIGHT, EQUAL, 3),
+        
+        // Boxes for: 
+        // Options | Batch List
+        hbox({
 
-          // Title for Batch List
-          text("Batches to Run:") | center | border,
-
-          // List of Batches
-          vbox({
+            // Left: Options Box
             vbox({
-              text(" TODO: \nBatch list here "),
-            }) | border,
-          })
+            btn_run_all->Render(),
+            btn_run_selected->Render(),
+            btn_select_all->Render(),
+            btn_deselect_all->Render(),
+            filler(),
+            btn_back->Render(),
+            }) | border | size(WIDTH,EQUAL,30),
+
+            // Right: Batch List box
+            vbox({
+
+            // Title for Batch List
+            text("Batches to Run:") | border,
+            batch_list->Render()
+
+            }) | border | xflex,
 
         }) | flex,
 
-      }) | flex,
-
+        });
     });
-  });
 }
 
 #endif

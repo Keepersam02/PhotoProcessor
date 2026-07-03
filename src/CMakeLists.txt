@@ -6,9 +6,25 @@ add_library(bpp_lib
   db/database.hpp
   db/schema.cpp
   db/schema.hpp
+
   db/models/batch.hpp
-  db/repos/batch_repo.cpp
-  db/repos/batch_repo.hpp
+  db/models/pipeline.hpp
+  db/models/operation.hpp
+
+  db/model_repos/batch_repo.hpp
+  db/model_repos/pipeline_repo.hpp
+  db/model_repos/operation_repo.hpp
+  db/model_repos/batch_repo.cpp
+  db/model_repos/pipeline_repo.cpp
+  db/model_repos/operation_repo.cpp
+
+  db/maps/batch_pipeline_map.hpp
+  db/maps/pipeline_operation_map.hpp
+
+  db/map_repos/batch_pipeline_map_repo.hpp
+  db/map_repos/batch_pipeline_map_repo.cpp
+  db/map_repos/pipeline_operation_map_repo.hpp
+  db/map_repos/pipeline_operation_map_repo.cpp
 )
 
 target_compile_options(bpp_lib PRIVATE

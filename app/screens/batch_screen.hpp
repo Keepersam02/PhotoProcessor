@@ -5,8 +5,11 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
 #include "../app_state.hpp"
+#include "../modals/confirm_popup.hpp"
+#include "../modals/message_popup.hpp"
 
 using namespace ftxui;
+
 
 
 
@@ -14,86 +17,91 @@ using namespace ftxui;
   TODO: 
   EDIT:
   - can only edit 1 at a time
-  Delete:
-  - select/deselect all
 
 */
 
-/*
-  Create: 
-  enter name and go into create screen
-  select photos and pipelines 
-
-  Edit: 
-  select 1 batch
-
-  Delete:
-  Select batches and delete with conformation
-
-  Back:
-  back to menu
-*/
 // Batches screen
-Component MakeBatchScreen(AppState& state, int& active_tab) {
+Component BatchScreen(App& app) {
 
-  auto btn_create    = Button("  Create    ", [&]{ active_tab = 4; });
-  auto btn_edit      = Button("  Edit      ", [&]{  });
-  auto btn_delete    = Button("  Delete    ", [&]{  });
-  auto btn_back      = Button("  Back      ", [&]{ active_tab = 0; });
+    auto delete_confirm_show = std::make_shared<bool>(false);
+    auto none_selected_show = std::make_shared<bool>(false);
 
-
-  auto sidebar = Container::Vertical({
-    btn_create,
-    btn_edit,
-    btn_delete,
-    btn_back
-  });
-
-  auto batch_table = std::make_shared<BatchTable>(state);
+    auto btn_create    = Button("  Create    ", [&]{app.active_tab_ = 4; });
+    auto btn_edit      = Button("  Edit      ", [&]{  });
+    auto btn_delete    = Button("  Delete    ", [&, none_selected_show, delete_confirm_show]{ 
+        ((!app.anySelectedBatches()) ? *none_selected_show : *delete_confirm_show) = true;
+    });
+    auto btn_back      = Button("  Back      ", [&]{ app.active_tab_ = 0; });
 
 
-  // Allows you to traverse through options with up and down arrows
-  auto menu = Container::Horizontal({
-    sidebar,
-    batch_table
-  });
+    auto sidebar = Container::Vertical({
+        btn_create,
+        btn_edit,
+        btn_delete,
+        btn_back
+    });
+        
+    auto batch_list = std::make_shared<BatchList>(app.state_);
 
-  // Draws out menu screen
-  return Renderer(menu, [=, &state]{
-    return vbox({
-      
-      // Title
-      text("Batches") | bold | center | border | size(HEIGHT, EQUAL, 3),
-      
-      // Boxes for: 
-      // Options | Batch List
-      hbox({
+    auto menu = Container::Horizontal({
+        sidebar, batch_list
+    });
 
-        // Left: Options Box
-        vbox({
-          btn_create->Render(),
-          btn_edit->Render(),
-          btn_delete->Render(),
-          btn_back->Render(),  
-        }) | border | size(WIDTH,EQUAL,30),
+    auto batch_screen = Renderer(menu, [=,&app]{
+        return vbox({
+        
+        // Title
+        text("Batches") | bold | center | border | size(HEIGHT, EQUAL, 3),
+        
+        // Boxes for: 
+        // Options | Batch List
+        hbox({
 
-        separator(),
+            // Left: Options Box
+            vbox({
+            btn_create->Render(),
+            btn_edit->Render(),
+            btn_delete->Render(),
+            filler(),
+            btn_back->Render(),  
+            }) | border | size(WIDTH,EQUAL,30),
 
-        // Right: Batch List box
-        vbox({
+            separator(),
 
-          // Title for Batch List
-          text("Batch List") | center | border,
+            // Right: Batch List box
+            vbox({
 
-          // List of Batches
-          batch_table->Render()
+            // Title for Batch List
+            text("Batch List") | border,
+
+            // List of Batches
+            batch_list->Render()
+
+            }) | flex,
 
         }) | flex,
 
-      }) | flex,
-
+        });
     });
-  });
-}
 
+    auto none_selected = messagePopup(
+        [&app]{
+            return "No Batches to delete.";
+        },
+        "Back",
+        none_selected_show.get()
+    );
+    auto confirm_delete = confirmPopup(
+        [&app]{
+            return "Are you sure you want to delete these Batches?";
+        },
+        delete_confirm_show.get(),
+        [&app]{ app.deleteSelectedBatches(); }
+    );
+
+    auto with_delete_modal = Modal(batch_screen, none_selected, none_selected_show.get());
+    auto with_both_modals  = Modal(with_delete_modal, confirm_delete, delete_confirm_show.get());
+
+    return with_both_modals;
+}
 #endif

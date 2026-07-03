@@ -1,0 +1,10 @@
+PRAGMA foreign_keys = OFF;
+
+DELETE FROM batch;
+DELETE FROM pipeline;
+DELETE FROM batch_pipeline_map;
+-- etc. for each table
+
+PRAGMA foreign_keys = ON;
+
+VACUUM;

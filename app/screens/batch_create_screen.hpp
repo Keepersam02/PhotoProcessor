@@ -7,15 +7,9 @@
 #include "ftxui/component/screen_interactive.hpp"
 #include <ftxui/dom/elements.hpp>
 
-#include <chrono>
-#include <iostream>
+#include "../components/pipeline_list.hpp"
+#include "../modals/message_popup.hpp"
 
-
-#include "../app_state.hpp"
-#include "batch_screen.hpp"
-#include "../components/batch_table.hpp"
-#include "../../src/db/models/batch.hpp"
-#include "../../src/db/repos/batch_repo.hpp"
 
 using namespace ftxui;
 
@@ -24,7 +18,6 @@ using namespace ftxui;
 TODO:
 make button always be on enter name
 unique names
-
 
 */
 
@@ -46,97 +39,86 @@ unique names
 
 
 */
-Component MakeBatchCreateScreen(AppState& state, int& active_tab) {   
-  
-  auto batch_table = std::make_shared<BatchTable>(state);
+Component BatchCreateScreen(App& app) {
+    auto show_name_in_use = std::make_shared<bool>(false);
 
-  // Save batch to db
-  auto btn_save    = Button("    Save    ", [&]{
+    auto pipeline_list = std::make_shared<PipelineList>(app.state_);
 
-    // Get system time:
-    time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    // Save batch to db
+    auto btn_save    = Button("    Save    ", [&, show_name_in_use]{ *show_name_in_use = !app.saveNewBatch(); });
+    auto btn_cancel  = Button("    Cancel  ", [&]{ app.active_tab_ = 1; app.state_.input_string = "";});
+    auto btn_exit    = Button("    Exit    ", [&]{ app.active_tab_ = 1; app.state_.input_string = "";});
 
-    // Get readable time
-    char buffer[32];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::gmtime(&t));
+    // TODO: unique name check?
+    // input string:
+    Component input = Input(&app.state_.input_string, " Enter Name") | bold;
 
-
-    // Assign system time to date created and modified
-    state.input_batch.dateModified = static_cast<int64_t>(t);
-    state.input_batch.dateCreated = static_cast<int64_t>(t);
-
-    state.input_batch.dateCreatedFormatted = buffer;
-    state.input_batch.dateModifiedFormatted = buffer;
-
-    // save name string and reset it in appstate
-    state.input_batch.name = state.input_string;
-    state.input_string = "";
-
-    // default batch status
-    state.input_batch.status = 0;
-
-    // insert batch to db
-    state.batchRepo.insert(state.input_batch);
-
-    // go back to batch screen
-    active_tab = 1;
-
-    //refresh batch table
-    state.refresh();
-  });
-
-
-
-
-  
-  auto btn_cancel  = Button("    Cancel  ", [&]{ active_tab = 1; state.input_string = "";});
-  auto btn_exit    = Button("    Exit    ", [&]{ active_tab = 1; state.input_string = "";});
-
-  // TODO: unique name check?
-  // input string:
-  Component input = Input(&state.input_string, " Enter Name") | bold;
-
-  // filter out newline chars
-  input |= CatchEvent([&](Event event) {
+    // filter out newline chars
+    input |= CatchEvent([&](Event event) {
     return (event.character()[0] == '\n');
-  });
+    });
 
-  auto sidebar = Container::Vertical({
+    input->TakeFocus();
+
+    auto sidebar = Container::Vertical({
     btn_save,
     btn_cancel,
     btn_exit
-  });
-  // Menu navigation
-  auto menu = Container::Vertical({
+    });
+    
+    // Menu navigation
+    auto menu = Container::Vertical({
     input,
     Container::Horizontal({
-      sidebar, batch_table
+        sidebar, pipeline_list
     })
-  });
-
-
-
-  // Draws out menu screen
-  return Renderer(menu, [=, &state]{
-    return vbox({
-      // Batch name input
-      hbox({
-        text("Batch Name:"),
-        input->Render() | xflex  //| size(HEIGHT,EQUAL, 3)
-      }) | border | xflex,
-
-      // List of batches and pipelines
-      hbox({
-        vbox({
-          btn_save->Render(),
-          btn_cancel->Render(),
-          btn_exit->Render(),
-        }) | border | yflex,
-
-      })
     });
-  });
-}
 
+    // auto pipeline_list = std::make_shared<PipelineList>(state);
+    auto name_in_use = messagePopup(
+        [&app]{
+            return "The name is in use! Please use a different name. name : "
+                + app.state_.input_string;
+        },
+        "Back",
+        show_name_in_use.get()
+    );
+
+    auto batch_create_screen = Renderer(menu, [=,&app]{
+    return vbox({
+
+        // Batch name input
+        hbox({
+        text("Batch Name:"),
+        input->Render() | xflex
+        }) | border | xflex,
+
+        hbox({
+
+        // sidebar
+        vbox({
+            btn_save->Render(),
+            btn_cancel->Render(),
+            filler(),
+            btn_exit->Render(),
+        }) | size(WIDTH,EQUAL,30) | border,
+
+
+        vbox({
+            text("Pipelines"),
+            pipeline_list->Render()
+        }) | border | xflex,
+
+        vbox({
+            text("TODO Files:"),
+        }) | border | xflex
+
+        }) | flex
+    });
+    });
+
+    // Draws out menu screen
+    return Modal(batch_create_screen, name_in_use, show_name_in_use.get());
+}
 
 #endif

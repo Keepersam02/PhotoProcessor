@@ -1,7 +1,6 @@
-
 #pragma once
-#ifndef BATCH_TABLE_H
-#define BATCH_TABLE_H
+#ifndef BATCH_LIST_H
+#define BATCH_LIST_H
 
 
 #include <ftxui/component/component.hpp>
@@ -11,31 +10,15 @@
 
 #include "../app_state.hpp"
 #include "../../src/db/models/batch.hpp"
-#include "../../src/db/repos/batch_repo.hpp"
-
-#include <iostream>
-#include <format>
-#include <string>
-#include <ctime>
+#include "../../src/db/model_repos/batch_repo.hpp"
+#include "../helpers/helper.hpp"
 
 using namespace ftxui;
 
-
-
-
-std::string epochToReadable(int64_t time){
-    time_t t = static_cast<time_t>(time);
-    char buffer[32];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::gmtime(&t));
-    return buffer;
-}
-
 /*
-
 TODO:
  - refresh instead of making whole new one
  - dynamic loading for large batches
-
 */
 
 
@@ -46,10 +29,10 @@ TODO:
  * 
  * 
  */
-class BatchTable : public ComponentBase {
+class BatchList : public ComponentBase {
 public:
     // Pass AppState by reference and store it
-    BatchTable(AppState& state) : state_(state) {
+    BatchList(AppState& state) : state_(state) {
         checkbox_container_ = Container::Vertical({}, &active_index_);
         Add(checkbox_container_); // Register as a child so keyboard events flow into it
     }
@@ -79,11 +62,10 @@ public:
                     checkbox_el = checkbox_container_->ChildAt(i)->Render();
                 // }
 
-                // Load readable times to appstate from db
+                // Load readable times to appstate
                 if (batch.dateCreatedFormatted == ""){
                     batch.dateCreatedFormatted = epochToReadable(batch.dateCreated);
                 } 
-                
                 if (batch.dateModifiedFormatted == ""){
                     batch.dateModifiedFormatted = epochToReadable(batch.dateModified);
                 }

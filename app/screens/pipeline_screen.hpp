@@ -5,62 +5,98 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
 #include "../app_state.hpp"
+#include "../components/pipeline_list.hpp"
 
 using namespace ftxui;
 
 // Pipelines screen
-Component MakePipelineScreen(AppState& state, int& active_tab) {
+Component PipelineScreen(App& app) {
 
-  auto btn_create    = Button("  Create    ", [&]{  });
-  auto btn_edit      = Button("  Edit      ", [&]{  });
-  auto btn_delete    = Button("  Delete    ", [&]{  });
-  auto btn_back      = Button("  Back      ", [&]{ active_tab = 0; });
+    //pipeline list
+    auto pipeline_list = std::make_shared<PipelineList>(app.state_);
 
-  // Allows you to traverse through options with up and down arrows
-  auto menu = Container::Vertical({
-    btn_create, btn_edit, btn_delete, btn_back
-  });
 
-  // Draws out menu screen
-  return Renderer(menu, [=, &state]{
-    return vbox({
-      
-      // Title
-      text("Pipelines") | bold | center | border | size(HEIGHT, EQUAL, 3),
-      
-      // Boxes for: 
-      // Options | Pipeline List
-      hbox({
 
-        // Left: Options Box
-        vbox({
-          btn_create->Render(),
-          btn_edit->Render(),
-          btn_delete->Render(),
-          btn_back->Render(),  
-        }) | border | size(WIDTH,EQUAL,30),
+    auto delete_confirm_show = std::make_shared<bool>(false);
+    auto none_selected_show = std::make_shared<bool>(false);
 
-        separator(),
+    // buttons
+    auto btn_create    = Button("  Create    ", [&]{ app.active_tab_ = 5; });
+    auto btn_edit      = Button("  Edit      ", [&]{  });
+    auto btn_delete    = Button("  Delete    ", [&, none_selected_show, delete_confirm_show]{
+        ((!app.anySelectedPipelines()) ? *none_selected_show : *delete_confirm_show) = true;
+    });
+    auto btn_back      = Button("  Back      ", [&]{ app.active_tab_ = 0; });
 
-        // Right: Batch List box
-        vbox({
+    // Allows you to traverse through options with up and down arrows
+    auto sidebar = Container::Vertical({
+        btn_create, btn_edit, btn_delete, btn_back
+    });
 
-          // Title for Pipeline List
-          text("Pipeline List") | center | border,
+    auto menu = Container::Horizontal({
+        sidebar, pipeline_list
+    });
 
-          // List of Pipelines
-          vbox({
+    auto pipeline_screen = Renderer(menu, [=, &app]{
+        return vbox({
+        
+        // Title
+        text("Pipelines") | bold | center | border | size(HEIGHT, EQUAL, 3),
+        
+        // Boxes for: 
+        // Options | Pipeline List
+        hbox({
+
+            // Left: Options Box
             vbox({
-              text(" TODO: \nPipeline list here "),
-            }) | border,
-          })
+            btn_create->Render(),
+            btn_edit->Render(),
+            btn_delete->Render(),
+            filler(),
+            btn_back->Render(),  
+            }) | border | size(WIDTH,EQUAL,30),
+
+            separator(),
+
+            // Right: Pipeline List box
+            vbox({
+
+            // Title for Pipeline List
+            text("Pipeline List") | border,
+
+            // List of Pipelines
+            pipeline_list->Render()
+
+            }) | flex,
 
         }) | flex,
 
-      }) | flex,
-
+        });
     });
-  });
+
+    auto none_selected = messagePopup(
+        [&app]{
+            return "No Pipelines to delete.";
+        },
+        "Back",
+        none_selected_show.get()
+    );
+
+    auto confirm_delete = confirmPopup(
+        [&app]{
+            return ("Are you sure you want to delete these Pipelines? They are used in "
+                    "|TODO: number of batches|" "Batches");
+        },
+        delete_confirm_show.get(),
+        [&app]{ app.deleteSelectedPipelines(); }
+    );
+
+    auto with_delete_modal = Modal(pipeline_screen, none_selected, none_selected_show.get());
+    auto with_both_modals  = Modal(with_delete_modal, confirm_delete, delete_confirm_show.get());
+
+    // Draws out menu screen
+    return with_both_modals;
+
 }
 
 #endif

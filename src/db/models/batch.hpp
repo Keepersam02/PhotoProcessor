@@ -22,16 +22,17 @@ struct Batch {
     int8_t          status;
 
     // CLI variables
-    bool            is_selected;
-    std::string     dateCreatedFormatted;
-    std::string     dateModifiedFormatted;
+    bool            is_selected{false};
+    std::string     dateCreatedFormatted = "";
+    std::string     dateModifiedFormatted = "";
 };
 
 enum class BatchStatus {
     Pending    = 0,
     Processing = 1,
     Complete   = 2,
-    Failed     = -1
+    Failed     = 3,
+    Deleted    = -1,
 };
 
 

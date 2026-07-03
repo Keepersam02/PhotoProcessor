@@ -1,15 +1,17 @@
 #pragma once
-#ifndef PIPELINE_H
-#define PIPELINE_H
+#ifndef DIRECTORY_H
+#define DIRECTORY_H
 
 #include <string>
 #include <iostream>
 
 
-struct Pipeline {
+struct Directory {
     // DB variables
     int32_t         id;
     std::string     name;
+    std::string     path;
+    int32_t         number_of_files;
     int64_t         dateCreated;
     int64_t         dateModified;
 

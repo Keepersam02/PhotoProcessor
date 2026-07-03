@@ -1,0 +1,3 @@
+#!/bin/bash
+sqlite3 src/db/BPP.db < src/db/SQLite_commands/Reset.sql
+

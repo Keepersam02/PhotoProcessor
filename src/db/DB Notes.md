@@ -16,6 +16,7 @@ Batch Table:
 - Long Date Created
 - Long Date Modified
 - Int Status
+- Output dir
 
 Batch Pipeline Map:
 - Int Primary key
@@ -32,18 +33,19 @@ Operation pipeline map:
 - Int Primary key
 - int foreign key (Pipeline)
 - foreign key (operation)
+- position(for order)
 
 Operation:
 - Int Primary Key
 - name unique
 - ...?
 
-
+(individual image)
 File Table:
 - Int Primary Key
 - Int Foreign Key (source)
 - Int Foreign Key (batch)
-- name 
+- string name 
 - string path
 - long DBCreated (added in DB)
 - date DBModified in DB ()?
@@ -65,6 +67,8 @@ Source Batch Map:
 - Int Primary Key 
 - Int Foreign Key (Dir)
 - Int Foreign Key (Batch)
+
+
 
 
 
