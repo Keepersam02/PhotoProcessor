@@ -102,7 +102,12 @@ protected:
                                 "to read properly so it doesnt return weirdly";
           ostream.write(message.data(), message.size());
         } else if (file.is_valid) {
-          CopyImage(file.name, file_path);
+          auto ret = CopyImage(file.name, file_path);
+          if (!ret) {
+            const auto err = ret.error();
+            std::cout << err.message_;
+            continue;
+          }
         }
       }
     }
@@ -112,8 +117,12 @@ protected:
   void TearDown() override { fs::remove_all(master_dir); }
 
 private:
-  bool CopyImage(std::string name, fs::path dest) {
+  std::expected<bool, image_error> CopyImage(std::string name, fs::path dest) {
     fs::path image_src = fs::path(TEST_IMAGE_DIR) / name;
+    if (!fs::exists(image_src)) {
+      return std::unexpected(
+          image_error::IO(0, err_severity::ERROR, "file does not exist", ""));
+    }
     std::ifstream istream(image_src, std::ios::binary);
     istream.seekg(0, std::ios::end);
     size_t file_size = istream.tellg();

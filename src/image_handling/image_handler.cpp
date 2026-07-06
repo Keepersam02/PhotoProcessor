@@ -1,23 +1,52 @@
 #include "io/image_io.hpp"
 #include "io/image_io_error.hpp"
-#include <algorithm>
-#include <cstdint>
+#include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <expected>
 #include <fcntl.h>
 #include <filesystem>
 #include <format>
+#include <linux/sysinfo.h>
 #include <openssl/evp.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <system_error>
 #include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
-/*
-void copy_files(std::vector<fs::path> &file_paths,
-                std::vector<fs::path> &dest_dirs, uint8_t max_threads) {}
-*/
+
+const int NUM_FILE_POOLS = 5;
+
+struct files_info {
+  size_t max_size;
+  size_t average_size;
+  size_t threshholds[NUM_FILE_POOLS];
+};
+
+std::expected<files_info, image_error>
+get_image_stats(const std::vector<fs::path> &file_paths) {
+  struct stat f_stat;
+  int ret = 0;
+  size_t max_size = 0;
+  size_t total_bytes = 0;
+  for (const auto &path : file_paths) {
+    ret = stat(path.c_str(), &f_stat);
+    if (ret != 0) {
+    }
+    size_t file_size = static_cast<size_t>(f_stat.st_size);
+    if (file_size > max_size) {
+      max_size = file_size;
+    }
+    total_bytes += file_size;
+  }
+  files_info f_info;
+  f_info.max_size = max_size;
+  f_info.average_size = total_bytes / file_paths.size();
+  return f_info;
+}
+
 std::expected<bool, image_error> file_copier(void *file, size_t file_size,
                                              fs::path src, fs::path dest_dir) {
   const auto file_name = src.filename();

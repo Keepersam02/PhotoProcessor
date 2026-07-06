@@ -1,8 +1,12 @@
 #pragma once
+#include "sys/sysinfo.h"
 #include "gtest/gtest_prod.h"
+#include <algorithm>
+#include <cmath>
 #include <condition_variable>
 #include <cstddef>
 #include <cstring>
+#include <linux/sysinfo.h>
 #include <memory>
 #include <mutex>
 #include <stack>
@@ -23,11 +27,28 @@ private:
   size_t elem_size_;
 
 public:
-  file_pool(size_t num_elems, size_t elem_size) {
-    capacity_ = num_elems;
+  file_pool(size_t elem_size, float percent_ram) {
+    struct sysinfo s_info;
+    int ret = sysinfo(&s_info);
+    if (ret != 0) {
+    }
+    float max_pool = static_cast<float>(s_info.totalram) * percent_ram;
+    size_t max_elems = static_cast<size_t>(std::lround(max_pool)) / elem_size;
+    size_t pool_size = max_elems * elem_size;
+    files = std::make_unique<std::byte[]>(pool_size);
+    capacity_ = max_elems;
     elem_size_ = elem_size;
+    for (size_t i = 0; i < capacity_; i++) {
+      avail_index.push(i);
+    }
+  }
 
-    files = std::make_unique<std::byte[]>(capacity_ * elem_size_);
+  file_pool(size_t elem_size, size_t max_pool_size) {
+    capacity_ = max_pool_size / elem_size;
+    size_t pool_remainder = max_pool_size % elem_size;
+    elem_size_ = elem_size;
+    size_t pool_size = max_pool_size - pool_remainder;
+    files = std::make_unique<std::byte[]>(pool_size);
     for (size_t i = 0; i < capacity_; i++) {
       avail_index.push(i);
     }
