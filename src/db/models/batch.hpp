@@ -13,13 +13,21 @@ TODO:
 
 */
 
+enum class BatchStatus : int8_t {
+    Pending    = 0,
+    Processing = 1,
+    Complete   = 2,
+    Failed     = 3,
+    Deleted    = -1,
+};
+
 struct Batch {
     // DB variables
     int32_t         id;
     std::string     name;
     int64_t         dateCreated;
     int64_t         dateModified;
-    int8_t          status;
+    BatchStatus     status;
 
     // CLI variables
     bool            is_selected{false};
@@ -27,13 +35,6 @@ struct Batch {
     std::string     dateModifiedFormatted = "";
 };
 
-enum class BatchStatus {
-    Pending    = 0,
-    Processing = 1,
-    Complete   = 2,
-    Failed     = 3,
-    Deleted    = -1,
-};
 
 
 #endif

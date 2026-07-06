@@ -6,6 +6,7 @@ add_executable(bpp_app
   main.cpp
   app.cpp
   app_state.cpp
+  menu.cpp
 )
 
 target_compile_options(bpp_app PRIVATE

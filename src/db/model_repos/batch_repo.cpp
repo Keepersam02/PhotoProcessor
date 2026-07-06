@@ -13,7 +13,7 @@ void BatchRepo::insert(const Batch& b) {
         q.bind(1, b.name);
         q.bind(2, b.dateCreated);
         q.bind(3, b.dateModified);
-        q.bind(4, b.status);
+        q.bind(4, static_cast<int8_t>(b.status));
         q.exec();
     });
 }
@@ -27,7 +27,7 @@ Batch BatchRepo::findById(int32_t id) {
         q.bind(1, id);
         if (q.executeStep()) {
             result = { q.getColumn(0), q.getColumn(1),
-                       q.getColumn(2).getInt64(), q.getColumn(3).getInt64(), q.getColumn(4) };
+                       q.getColumn(2).getInt64(), q.getColumn(3).getInt64(), static_cast<BatchStatus>(q.getColumn(4).getInt()) };
         }
     });
     if (!result) throw std::runtime_error("Batch not found: " + std::to_string(id));
@@ -43,7 +43,7 @@ Batch BatchRepo::findByName(std::string n) {
         q.bind(1, n);
         if (q.executeStep()) {
             result = { q.getColumn(0), q.getColumn(1),
-                       q.getColumn(2).getInt64(), q.getColumn(3).getInt64(), q.getColumn(4) };
+                       q.getColumn(2).getInt64(), q.getColumn(3).getInt64(), static_cast<BatchStatus>(q.getColumn(4).getInt()) };
         }
     });
     if (!result) throw std::runtime_error("Batch not found: " + n);
@@ -57,10 +57,20 @@ std::vector<Batch> BatchRepo::all() {
             "SELECT id, name, date_created, date_modified, status FROM batch");
         while (q.executeStep()) {
             results.push_back({ q.getColumn(0), q.getColumn(1),
-                                q.getColumn(2).getInt64(), q.getColumn(3).getInt64(), q.getColumn(4) });
+                                q.getColumn(2).getInt64(), q.getColumn(3).getInt64(), static_cast<BatchStatus>(q.getColumn(4).getInt()) });
         }
     });
     return results;
+}
+
+void BatchRepo::updateName(int32_t id, std::string name){
+    db_->execute([&](SQLite::Database& db) {
+        SQLite::Statement q(db,
+            "UPDATE batch SET name = ? WHERE id = ?");
+        q.bind(1, name);
+        q.bind(2, id);
+        q.exec();
+    });
 }
 
 void BatchRepo::updateStatus(int32_t id, BatchStatus status) {
@@ -78,16 +88,6 @@ void BatchRepo::updateModified(int32_t id, int64_t dateModified) {
         SQLite::Statement q(db,
             "UPDATE batch SET date_modified = ? WHERE id = ?");
         q.bind(1, dateModified);
-        q.bind(2, id);
-        q.exec();
-    });
-}
-
-void BatchRepo::updateName(int32_t id, std::string name){
-    db_->execute([&](SQLite::Database& db) {
-        SQLite::Statement q(db,
-            "UPDATE batch SET name = ? WHERE id = ?");
-        q.bind(1, name);
         q.bind(2, id);
         q.exec();
     });

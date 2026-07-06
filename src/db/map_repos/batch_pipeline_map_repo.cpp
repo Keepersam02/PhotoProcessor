@@ -47,7 +47,7 @@ std::vector<Batch> BatchPipelineMapRepo::findAllBatchesByPipeline(int32_t p_id) 
         while (q.executeStep()) {
             results.push_back({ q.getColumn(0), q.getColumn(1),
                                 q.getColumn(2).getInt64(), q.getColumn(3).getInt64(),
-                                q.getColumn(4) });
+                                static_cast<BatchStatus>(q.getColumn(4).getInt()) });
         }
     });
     return results;
@@ -89,8 +89,17 @@ void BatchPipelineMapRepo::removeByBatch(int32_t b_id){
 
 void BatchPipelineMapRepo::removeByPipeline(int32_t p_id){
     db_->execute([&](SQLite::Database& db) {
-    SQLite::Statement q(db, "DELETE FROM batch_pipeline_map WHERE pipeline_id = ?");
-    q.bind(1, p_id);
-    q.exec();
+        SQLite::Statement q(db, "DELETE FROM batch_pipeline_map WHERE pipeline_id = ?");
+        q.bind(1, p_id);
+        q.exec();
+    });
+}
+
+void BatchPipelineMapRepo::removeByBoth(int32_t b_id, int32_t p_id){
+    db_->execute([&](SQLite::Database& db) {
+        SQLite::Statement q(db, "DELETE FROM batch_pipeline_map WHERE batch_id = ? AND pipeline_id = ?");
+        q.bind(1, b_id);
+        q.bind(2, p_id);
+        q.exec();
     });
 }

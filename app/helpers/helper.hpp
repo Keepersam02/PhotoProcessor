@@ -11,8 +11,9 @@
 
 std::string epochToReadable(int64_t time){
     time_t t = static_cast<time_t>(time);
+
     char buffer[32];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::gmtime(&t));
+    std::strftime(buffer, sizeof(buffer), "%D %I:%M %p", std::gmtime(&t));
     return buffer;
 }
 

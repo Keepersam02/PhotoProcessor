@@ -28,18 +28,19 @@ public:
             }
 
             std::vector<std::vector<Element>> table_data;
-            
+
             // Headers (Row 0)
             table_data.push_back({
                 text("✔") | bold | flex,
                 text("Name") | bold | flex, 
-                text("Created") | bold | flex
+                text("Date Created") | bold | flex,
+                text("Date Modified") | bold | flex
             });
 
             // Rows
             for (size_t i = 0; i < state_.pipelines.size(); ++i) {
                 auto& pipeline = state_.pipelines[i];
-                
+
                 Element checkbox_el = text("");
                 // if (i < checkbox_container_->ChildCount()) { // checks if not rendered?
                     checkbox_el = checkbox_container_->ChildAt(i)->Render();
@@ -56,7 +57,8 @@ public:
                 table_data.push_back({
                     checkbox_el, 
                     text(pipeline.name),
-                    text(pipeline.dateCreatedFormatted)
+                    text(pipeline.dateCreatedFormatted),
+                    text(pipeline.dateModifiedFormatted)
                 });
             }
 
@@ -117,9 +119,5 @@ private:
     size_t last_size_ = 0;
     const void* last_ptr_ = nullptr;
 };
-
-
-
-
 
 #endif

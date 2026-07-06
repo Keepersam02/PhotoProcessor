@@ -4,7 +4,6 @@
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
-#include "../app_state.hpp"
 #include "../components/pipeline_list.hpp"
 
 using namespace ftxui;
@@ -21,7 +20,7 @@ Component PipelineScreen(App& app) {
     auto none_selected_show = std::make_shared<bool>(false);
 
     // buttons
-    auto btn_create    = Button("  Create    ", [&]{ app.active_tab_ = 5; });
+    auto btn_create    = Button("  Create    ", [&]{ app.active_tab_ = 6; });
     auto btn_edit      = Button("  Edit      ", [&]{  });
     auto btn_delete    = Button("  Delete    ", [&, none_selected_show, delete_confirm_show]{
         ((!app.anySelectedPipelines()) ? *none_selected_show : *delete_confirm_show) = true;

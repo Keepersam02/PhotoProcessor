@@ -25,49 +25,49 @@ public:
         std::shared_ptr<OperationRepo>            operationRepo,
         std::shared_ptr<BatchPipelineMapRepo>     batchPipelineMapRepo,
         std::shared_ptr<PipelineOperationMapRepo> pipelineOperationMapRepo);
-
     
     // General
     int run();
     void refresh();
     void writeError(const std::exception& e);
+    void writeError(const std::string& message);
 
     // Batch actions
     bool saveNewBatch();
+    bool editBatch();
     void deleteBatch(int id);
     void deleteSelectedBatches();
     void selectAllBatches();
     void deSelectAllBatches();
     bool anySelectedBatches();
-
+    void selectBatch();
+    
     // Pipeline actions
     bool saveNewPipeline();
     void deletePipeline(int id);
     void deleteSelectedPipelines();
     bool anySelectedPipelines();
+    void selectAllPipelines();
+    void deSelectAllPipelines();
 
     // Batch Pipeline Map Actions
     bool anyConnectedPipelines(Batch& b);
-    bool anyConnectedBatches(Pipeline& p);
-    bool anyConnectedPipelines(Operation& o);
-
+    bool anyConnectedBatches(Pipeline& p); // TODO
+    bool anyConnectedPipelines(Operation& o); // TODO
 
     // State for display data
     AppState state_;
-
     std::ofstream app_output;
-    
     int active_tab_ = 0;
+    ScreenInteractive screen_ = ScreenInteractive::Fullscreen();
 
 private:
-    std::shared_ptr<BatchRepo>    batchRepo_;
-    std::shared_ptr<PipelineRepo> pipelineRepo_;
-    std::shared_ptr<OperationRepo> operationRepo_;
-    std::shared_ptr<BatchPipelineMapRepo> batchPipelineMapRepo_;
+    std::shared_ptr<BatchRepo>                batchRepo_;
+    std::shared_ptr<PipelineRepo>             pipelineRepo_;
+    std::shared_ptr<OperationRepo>            operationRepo_;
+    std::shared_ptr<BatchPipelineMapRepo>     batchPipelineMapRepo_;
     std::shared_ptr<PipelineOperationMapRepo> pipelineOperationMapRepo_;
 
-    
-    ScreenInteractive screen_ = ScreenInteractive::Fullscreen();
 };
 
 #endif

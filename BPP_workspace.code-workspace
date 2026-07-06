@@ -1,0 +1,40 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"todohighlight.keywords": [
+			{
+				"text": "TODO",
+				"color": "#000000",
+				"backgroundColor": "#b809db",
+				"overviewRulerColor": "#b809db"
+			},
+			{
+				"text": "DEBUG",
+				"color": "#000000",
+				"backgroundColor": "#fc0303",
+				"overviewRulerColor": "#0000FF"
+			},
+			{
+				"text": "OPTIMIZE",
+				"color": "#000000",
+				"backgroundColor": "#0000FF",
+				"overviewRulerColor": "#0000FF"
+			},
+			{
+				"text": "!!!",
+				"color": "#000000",
+				"backgroundColor": "#fce303",
+				"overviewRulerColor": "#0000FF"
+			}
+		],
+		"workbench.colorCustomizations": {
+			"editor.foldBackground": "#a8a7a709",
+			"editorGutter.foldingControlForeground": "#00ff00",
+			"editor.foldingHighlight": "#0000ff22"
+		}
+	}
+}

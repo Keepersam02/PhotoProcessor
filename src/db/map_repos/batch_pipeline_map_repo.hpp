@@ -22,6 +22,7 @@ public:
     void                          remove(int32_t id);
     void                          removeByBatch(int32_t b_id);
     void                          removeByPipeline(int32_t p_id);
+    void                          removeByBoth(int32_t b_id, int32_t p_id);
     
 
 private:

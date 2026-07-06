@@ -26,6 +26,7 @@ int main() {
     // 4. App
     App app(batchRepo, pipelineRepo, operationRepo,batchPipelineMapRepo,pipelineOperationMapRepo);
     return app.run();
+        
 
 
 }

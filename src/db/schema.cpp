@@ -41,14 +41,16 @@ void Schema::initialize(SQLite::Database& db) {
         CREATE TABLE IF NOT EXISTS batch_pipeline_map (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             batch_id    INTEGER NOT NULL REFERENCES batch(id),
-            pipeline_id INTEGER NOT NULL REFERENCES pipeline(id)
+            pipeline_id INTEGER NOT NULL REFERENCES pipeline(id),
+            UNIQUE(batch_id, pipeline_id)
         );
 
         CREATE TABLE IF NOT EXISTS pipeline_operation_map (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             pipeline_id  INTEGER NOT NULL REFERENCES pipeline(id),
             operation_id INTEGER NOT NULL REFERENCES operation(id),
-            position     INTEGER NOT NULL UNIQUE
+            position     INTEGER NOT NULL UNIQUE,
+            UNIQUE(pipeline_id, operation_id)
         );
     )");
 }

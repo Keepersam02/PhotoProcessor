@@ -7,7 +7,6 @@
 #include <ftxui/dom/table.hpp>
 
 #include "../components/batch_list.hpp"
-#include "../app_state.hpp"
 
 
 using namespace ftxui;
@@ -26,7 +25,7 @@ Component MainScreen(App& app, std::function<void()> exit_fn){
     auto btn_run       = Button("  Run       ", [&]{ app.active_tab_ = 3; });
     auto btn_exit      = Button("  Exit      ", exit_fn);
 
-    auto batch_list = std::make_shared<BatchList>(app.state_);
+    auto batch_list = BatchList(app.state_.batches);
 
     auto sidebar = Container::Vertical({
 
@@ -64,12 +63,10 @@ Component MainScreen(App& app, std::function<void()> exit_fn){
             vbox({
 
             // Title for Batch List
-            text("Batch List") | border,
+            text("Batch List"),
 
             // List of Batches
-            vbox({
-                batch_list->Render()
-            })
+            batch_list->Render(),
 
             }) | flex,
 

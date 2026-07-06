@@ -33,7 +33,7 @@ unique names
 
   save -> save into db ? go back to main screen?
 
-  cancel -> return to main screen, 
+  cancel -> return to main screen,
 
   exit -> return to main screen
 
@@ -46,12 +46,12 @@ Component BatchCreateScreen(App& app) {
 
     // Save batch to db
     auto btn_save    = Button("    Save    ", [&, show_name_in_use]{ *show_name_in_use = !app.saveNewBatch(); });
-    auto btn_cancel  = Button("    Cancel  ", [&]{ app.active_tab_ = 1; app.state_.input_string = "";});
-    auto btn_exit    = Button("    Exit    ", [&]{ app.active_tab_ = 1; app.state_.input_string = "";});
+    auto btn_cancel  = Button("    Cancel  ", [&]{ app.active_tab_ = 1; app.state_.clearInput();;});
+    auto btn_exit    = Button("    Exit    ", [&]{ app.active_tab_ = 1; app.state_.clearInput();;});
 
     // TODO: unique name check?
     // input string:
-    Component input = Input(&app.state_.input_string, " Enter Name") | bold;
+    Component input = Input(&app.state_.input_string, " Enter Name ");
 
     // filter out newline chars
     input |= CatchEvent([&](Event event) {
@@ -85,36 +85,33 @@ Component BatchCreateScreen(App& app) {
     );
 
     auto batch_create_screen = Renderer(menu, [=,&app]{
-    return vbox({
+        return vbox({
 
-        // Batch name input
-        hbox({
-        text("Batch Name:"),
-        input->Render() | xflex
-        }) | border | xflex,
+            // Batch name input
+            hbox({
+                text("Batch Name: "),
+                input->Render() | size(WIDTH, GREATER_THAN, 5) | bgcolor(Color::Black),
+            }) | border,
 
-        hbox({
+            hbox({
+                // sidebar
+                vbox({
+                    btn_save->Render(),
+                    btn_cancel->Render(),
+                    filler(),
+                    btn_exit->Render(),
+                }) | size(WIDTH,EQUAL,30) | border,
 
-        // sidebar
-        vbox({
-            btn_save->Render(),
-            btn_cancel->Render(),
-            filler(),
-            btn_exit->Render(),
-        }) | size(WIDTH,EQUAL,30) | border,
-
-
-        vbox({
-            text("Pipelines"),
-            pipeline_list->Render()
-        }) | border | xflex,
-
-        vbox({
-            text("TODO Files:"),
-        }) | border | xflex
-
-        }) | flex
-    });
+                vbox({
+                    text("Pipelines"),
+                    pipeline_list->Render()
+                }) | xflex,
+                separator(),
+                vbox({
+                    text("TODO Files:"),
+                }) | xflex,
+            }) | flex,
+        }) | flex;
     });
 
     // Draws out menu screen

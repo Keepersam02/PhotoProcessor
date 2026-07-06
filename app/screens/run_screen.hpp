@@ -12,7 +12,7 @@ using namespace ftxui;
 // Run screen
 Component RunScreen(App& app) {
 
-    auto batch_list = std::make_shared<BatchList>(app.state_);
+    auto batch_list = BatchList(app.state_.batches);
 
     auto btn_run_all             = Button("  Run All      ", [&]{ });
     auto btn_run_selected        = Button("  Run Selected ", [&]{ });

@@ -1,6 +1,6 @@
 /build/
 .vscode
-# .envrc
+ .envrc
 BPP.db*
-# SQLite_commands
-# /bin
+ SQLite_commands
+ /bin

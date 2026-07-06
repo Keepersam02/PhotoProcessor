@@ -29,20 +29,20 @@ INSERT INTO batch (name, date_created, date_modified, status) VALUES
     ('b9',  1719600000, 1719600000, 2),
     ('b10', 1719600000, 1719600000, 0);
 
--- Batch <-> Pipeline mapping (random, some batches mapped to multiple pipelines)
-INSERT INTO batch_pipeline_map (batch_id, pipeline_id) VALUES
-    (1, 4),
-    (1, 7),
-    (2, 2),
-    (3, 9),
-    (3, 1),
-    (4, 6),
-    (5, 3),
-    (5, 10),
-    (6, 8),
-    (7, 1),
-    (7, 5),
-    (8, 4),
-    (9, 9),
-    (9, 2),
-    (10, 7);
+-- -- Batch <-> Pipeline mapping (random, some batches mapped to multiple pipelines)
+-- INSERT INTO batch_pipeline_map (batch_id, pipeline_id) VALUES
+--     (1, 4),
+--     (1, 7),
+--     (2, 2),
+--     (3, 9),
+--     (3, 1),
+--     (4, 6),
+--     (5, 3),
+--     (5, 10),
+--     (6, 8),
+--     (7, 1),
+--     (7, 5),
+--     (8, 4),
+--     (9, 9),
+--     (9, 2),
+--     (10, 7);
