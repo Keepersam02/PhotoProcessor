@@ -1,11 +1,17 @@
 #include "image_io_error.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <expected>
 #include <filesystem>
 #include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
+
+struct path_id {
+  fs::path f_path;
+  uint64_t f_id;
+};
 
 std::expected<std::vector<fs::path>, image_error>
 find_files(const fs::path path);

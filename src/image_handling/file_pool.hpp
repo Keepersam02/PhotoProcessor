@@ -1,4 +1,5 @@
 #pragma once
+#include "image_handler.hpp"
 #include "sys/sysinfo.h"
 #include "gtest/gtest_prod.h"
 #include <algorithm>
@@ -54,6 +55,20 @@ public:
     }
   }
 
+  file_pool(files_info f_info, size_t max_pool_size) {
+    capacity_ = max_pool_size / f_info.max_size;
+    elem_size_ = f_info.max_size;
+    size_t pool_remainder = max_pool_size % elem_size_;
+    size_t pool_size = max_pool_size - pool_remainder;
+    files = std::make_unique<std::byte[]>(pool_size);
+    for (size_t i = 0; i < capacity_; i++) {
+      avail_index.push(i);
+    }
+  }
+
+  /*
+   * Waits for a slot to become available and grabs it.
+   */
   void *get_slot() {
     std::unique_lock<std::mutex> lock(mtx);
     a_cv.wait(lock, [this] { return !avail_index.empty(); });
@@ -64,6 +79,10 @@ public:
     return slot;
   }
 
+  /*
+   * Once a file has been loaded adds the pointer to that slot to a ready stack
+   * that a later stage uses to pull from.
+   */
   void slot_ready(void *file) {
     std::byte *file_ptr = static_cast<std::byte *>(file);
     const size_t raw_ptr = static_cast<size_t>(file_ptr - files.get());
@@ -73,6 +92,9 @@ public:
     r_cv.notify_one();
   }
 
+  /*
+   *  What later stages use to get a ready file.
+   */
   void *get_ready() {
     std::unique_lock<std::mutex> lock(mtx);
     r_cv.wait(lock, [this] { return !ready_index.empty(); });
@@ -83,6 +105,10 @@ public:
     return slot;
   }
 
+  /*
+   * Once later stage is done with the loaded file use this to return slot to
+   * avail_index and ready to reuse.
+   */
   void free_slot(void *file) {
     std::byte *file_ptr = static_cast<std::byte *>(file);
     const size_t raw_ptr = static_cast<size_t>(file_ptr - files.get());

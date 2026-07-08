@@ -1,4 +1,6 @@
 #include "image_io.hpp"
+#include "image_adjustments/file_pool.hpp"
+#include "image_handling/image_handler.hpp"
 #include "image_io_error.hpp"
 #include "tiff.h"
 #include "types/image.hpp"
@@ -11,6 +13,8 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <format>
+#include <liburing.h>
+#include <liburing/io_uring.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -20,13 +24,39 @@
 #include <utility>
 #include <vector>
 
+const u_int IO_URING_DEPTH = 16;
+
 namespace fs = std::filesystem;
 
+std::expected<bool, image_error> import_images(file_pool pool,
+                                               std::vector<path_id> f_paths) {
+  std::vector<path_id> in_progess;
+  struct io_uring ring;
+  int ret = io_uring_queue_init(IO_URING_DEPTH, &ring, 0);
+  if (ret < 0) {
+    return std::unexpected<image_error>(image_error::IO(
+        ret, err_severity::SEVERE, std::generic_category().message(errno),
+        "failed to initialize io_uring"));
+  }
+
+  while (f_paths.empty() && in_progess.empty()) {
+    auto sqe = io_uring_get_sqe(&ring);
+    if (!sqe) {
+      continue;
+    }
+    auto slot = pool.get_slot();
+    const auto next = f_paths.back();
+    int fd = open(next.f_path.c_str(), O_RDONLY);
+    struct stat f_stat;
+    ret = fstat(fd, &f_stat);
+    io_uring_prep_read(sqe, fd, slot, static_cast<unsigned>(f_stat.st_size), 0);
+  }
+}
+
 /*
- * Take user provided path and either add the provided file or search one level
- * deep if is provided.
- * Return IO image_error if path leads to non-existant file or is not directory
- * or regular file.
+ * Take user provided path and either add the provided file or search one
+ * level deep if is provided. Return IO image_error if path leads to
+ * non-existant file or is not directory or regular file.
  */
 std::expected<std::vector<fs::path>, image_error>
 find_files(const fs::path path) {
