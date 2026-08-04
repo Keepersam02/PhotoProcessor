@@ -1,5 +1,5 @@
 #include "image_io.hpp"
-#include "image_adjustments/file_pool.hpp"
+#include "image_handling/file_pool.hpp"
 #include "image_handling/image_handler.hpp"
 #include "image_io_error.hpp"
 #include "tiff.h"
@@ -28,28 +28,59 @@ const u_int IO_URING_DEPTH = 16;
 
 namespace fs = std::filesystem;
 
-std::expected<bool, image_error> import_images(file_pool pool,
-                                               std::vector<path_id> f_paths) {
+std::expected<bool, image_error> import_images(file_pool &pool,
+                                               std::vector<path_id> &f_paths) {
   std::vector<path_id> in_progess;
   struct io_uring ring;
-  int ret = io_uring_queue_init(IO_URING_DEPTH, &ring, 0);
-  if (ret < 0) {
-    return std::unexpected<image_error>(image_error::IO(
-        ret, err_severity::SEVERE, std::generic_category().message(errno),
-        "failed to initialize io_uring"));
+  {
+    int ret = io_uring_queue_init(IO_URING_DEPTH, &ring, 0);
+    if (ret < 0) {
+      return std::unexpected<image_error>(image_error::IO(
+          ret, err_severity::SEVERE, std::generic_category().message(errno),
+          "failed to initialize io_uring"));
+    }
   }
 
-  while (f_paths.empty() && in_progess.empty()) {
-    auto sqe = io_uring_get_sqe(&ring);
-    if (!sqe) {
-      continue;
+  while (!f_paths.empty() && !in_progess.empty()) {
+    struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
+    while (sqe != NULL) {
+      const auto cur = f_paths.back();
+      f_paths.pop_back();
+      in_progess.push_back(cur); // change to report loading file to db
+
+      int fd = open(cur.f_path.c_str(), O_RDONLY);
+      if (fd == -1) {
+        // report failure of that file to db
+        continue;
+      }
+      struct stat f_stat;
+      int ret = fstat(fd, &f_stat);
+      if (ret != 0) {
+        // report failure of file to db
+        continue;
+      }
+      auto buff = pool.get_slot();
+      io_uring_prep_read(sqe, fd, buff, static_cast<unsigned>(f_stat.st_size),
+                         0);
+      io_uring_sqe_set_data64(sqe, cur.f_id);
+      io_uring_submit(&ring);
+      sqe = io_uring_get_sqe(&ring);
     }
-    auto slot = pool.get_slot();
-    const auto next = f_paths.back();
-    int fd = open(next.f_path.c_str(), O_RDONLY);
-    struct stat f_stat;
-    ret = fstat(fd, &f_stat);
-    io_uring_prep_read(sqe, fd, slot, static_cast<unsigned>(f_stat.st_size), 0);
+
+    u_int num_read = 0;
+    struct io_uring_cqe *cqe_batch[IO_URING_DEPTH];
+    while (num_read < IO_URING_DEPTH / 2) {
+      unsigned num_ret =
+          io_uring_peek_batch_cqe(&ring, cqe_batch, IO_URING_DEPTH);
+      for (unsigned i = 0; i < num_ret; i++) {
+        io_uring_cqe curr = cqe_batch[i];
+        pool.slot_ready(void *file)
+        // create a map or just an array the size of the f_paths, use the file
+        // id to get the pointer
+
+        // report finished loading to db
+      }
+    }
   }
 }
 

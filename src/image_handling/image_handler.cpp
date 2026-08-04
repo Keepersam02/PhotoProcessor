@@ -1,3 +1,4 @@
+#include "image_handler.hpp"
 #include "io/image_io.hpp"
 #include "io/image_io_error.hpp"
 #include <cmath>
@@ -16,14 +17,6 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-
-const int NUM_FILE_POOLS = 5;
-
-struct files_info {
-  size_t max_size;
-  size_t average_size;
-  size_t threshholds[NUM_FILE_POOLS];
-};
 
 std::expected<files_info, image_error>
 get_image_stats(const std::vector<fs::path> &file_paths) {

@@ -1,3 +1,4 @@
+#pragma once
 #include "io/image_io_error.hpp"
 #include <expected>
 #include <filesystem>

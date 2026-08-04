@@ -2,7 +2,6 @@
 #include "image_handler.hpp"
 #include "sys/sysinfo.h"
 #include "gtest/gtest_prod.h"
-#include <algorithm>
 #include <cmath>
 #include <condition_variable>
 #include <cstddef>
