@@ -1,4 +1,6 @@
+#include "image_handling/file_pool.hpp"
 #include "image_io_error.hpp"
+#include "types/image_files.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <expected>
@@ -12,6 +14,12 @@ struct path_id {
   fs::path f_path;
   uint64_t f_id;
 };
+
+std::expected<bool, image_error>
+import_images_uring(file_pool &pool, std::vector<path_id> &f_paths,
+                    image_files &images);
+
+bool import_images_std(image_files &images, fs::path error_out);
 
 std::expected<std::vector<fs::path>, image_error>
 find_files(const fs::path path);

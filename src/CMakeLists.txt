@@ -8,6 +8,8 @@ add_library(bpp_lib
   image_handling/image_handler.hpp
   image_handling/file_pool.hpp
   types/image_types.hpp
+  types/image_file.hpp
+  types/image_files.hpp
 )
 
 

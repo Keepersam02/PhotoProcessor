@@ -9,6 +9,7 @@ struct exif_data {};
 class image_meta {
   fs::path image_path_;
   exif_data exif_data_;
+  void *image_data_;
 
   uint64_t get_id() { return image_id_; }
 

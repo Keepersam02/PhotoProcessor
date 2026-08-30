@@ -1,20 +1,28 @@
-#include "image_io.hpp"
 #include "image_handling/file_pool.hpp"
 #include "image_handling/image_handler.hpp"
 #include "image_io_error.hpp"
 #include "tiff.h"
 #include "types/image.hpp"
+#include "types/image_files.hpp"
 #include "types/image_internal.hpp"
+#include "types/image_types.hpp"
+#include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <exiv2/exif.hpp>
 #include <exiv2/exiv2.hpp>
 #include <expected>
 #include <fcntl.h>
 #include <filesystem>
 #include <format>
+#include <fstream>
+#include <ios>
 #include <liburing.h>
 #include <liburing/io_uring.h>
+#include <ostream>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -28,60 +36,104 @@ const u_int IO_URING_DEPTH = 16;
 
 namespace fs = std::filesystem;
 
-std::expected<bool, image_error> import_images(file_pool &pool,
-                                               std::vector<path_id> &f_paths) {
-  std::vector<path_id> in_progess;
-  struct io_uring ring;
-  {
-    int ret = io_uring_queue_init(IO_URING_DEPTH, &ring, 0);
-    if (ret < 0) {
-      return std::unexpected<image_error>(image_error::IO(
-          ret, err_severity::SEVERE, std::generic_category().message(errno),
-          "failed to initialize io_uring"));
-    }
+std::expected<bool, image_error>
+import_images_uring(file_pool &pool, image_files &images,
+                    db_err_queue &error_queue) {
+  if (images.files_ == NULL) {
+    // handle reporting to db return error
+  }
+  for (uint64_t i = 0; i < images.num_files_; i++) {
+    image_file &im = images.files_[i];
+  }
+}
+
+bool import_images_sys(image_files &images, fs::path error_out) {
+  std::ofstream o_stream;
+  o_stream.open(error_out);
+  if (!o_stream.is_open()) {
+    return false;
   }
 
-  while (!f_paths.empty() && !in_progess.empty()) {
-    struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
-    while (sqe != NULL) {
-      const auto cur = f_paths.back();
-      f_paths.pop_back();
-      in_progess.push_back(cur); // change to report loading file to db
-
-      int fd = open(cur.f_path.c_str(), O_RDONLY);
-      if (fd == -1) {
-        // report failure of that file to db
-        continue;
-      }
-      struct stat f_stat;
-      int ret = fstat(fd, &f_stat);
-      if (ret != 0) {
-        // report failure of file to db
-        continue;
-      }
-      auto buff = pool.get_slot();
-      io_uring_prep_read(sqe, fd, buff, static_cast<unsigned>(f_stat.st_size),
-                         0);
-      io_uring_sqe_set_data64(sqe, cur.f_id);
-      io_uring_submit(&ring);
-      sqe = io_uring_get_sqe(&ring);
-    }
-
-    u_int num_read = 0;
-    struct io_uring_cqe *cqe_batch[IO_URING_DEPTH];
-    while (num_read < IO_URING_DEPTH / 2) {
-      unsigned num_ret =
-          io_uring_peek_batch_cqe(&ring, cqe_batch, IO_URING_DEPTH);
-      for (unsigned i = 0; i < num_ret; i++) {
-        io_uring_cqe curr = cqe_batch[i];
-        pool.slot_ready(void *file)
-        // create a map or just an array the size of the f_paths, use the file
-        // id to get the pointer
-
-        // report finished loading to db
-      }
-    }
+  if (images == NULL) {
+    o_stream << "image_files reference nullptr" << std::endl;
+    return false;
   }
+  bool all_smooth = true;
+  for (uint64_t i = 0; i < images.num_files_; i++) {
+    auto &im = images.files_[i];
+    int fd = open(im.file_path_.c_str(), O_RDONLY);
+
+    struct stat *statbuf;
+    int ret = fstat(fd, statbuf);
+    if (ret == -1) {
+      all_smooth = false;
+      o_stream << "error getting file info, file: " << im.file_path_
+               << " , error: " << std::strerror(errno);
+      continue;
+    }
+
+    void *buf = malloc(static_cast<unsigned>(statbuf->st_size));
+    ssize_t num_read = read(fd, buf, static_cast<unsigned>(statbuf->st_size));
+  }
+}
+
+bool import_images_std(image_files &images, fs::path error_out) {
+  std::ofstream o_stream;
+  o_stream.open(error_out);
+  if (images.files_ == NULL) {
+    o_stream << "image_files nullptr err" << std::endl;
+    return false;
+  }
+
+  bool all_smooth = true;
+  for (uint64_t i = 0; i < images.num_files_; i++) {
+    std::ifstream i_stream;
+    auto &im = images.files_[i];
+
+    i_stream.open(im.file_path_, std::ios_base::binary | std::ios_base::in);
+    i_stream.seekg(std::ios_base::end);
+    auto file_size = i_stream.tellg();
+    i_stream.seekg(std::ios_base::beg);
+
+    auto buffer = malloc(static_cast<size_t>(file_size));
+    if (buffer == NULL) {
+      o_stream << "memory allocation failed, message: " << std::strerror(errno);
+      all_smooth = false;
+      images.failed.push_back(im.get_id());
+      continue;
+    }
+    i_stream.read(static_cast<char *>(buffer), file_size);
+    if (!i_stream) {
+      if (i_stream.bad()) {
+        o_stream << "image: " << im.get_id()
+                 << "; error: " << std::strerror(errno);
+      } else if (i_stream.fail() && !i_stream.eof()) {
+        o_stream << "im: " << im.get_id()
+                 << "; failed to reach end of file, expected: " << file_size
+                 << ", read: " << i_stream.gcount() << std::endl;
+      } else if (i_stream.eof()) {
+        o_stream << "im: " << im.get_id()
+                 << "hit end of file early, bytes read: " << i_stream.gcount()
+                 << std::endl;
+      }
+      all_smooth = false;
+      images.failed.push_back(im.get_id());
+      free(buffer);
+      continue;
+    }
+    if (i_stream.gcount() != file_size) {
+      all_smooth = false;
+      images.failed.push_back(im.get_id());
+      o_stream << "mismatch read and file size; read: " << i_stream.gcount()
+               << ", file_size: " << file_size
+               << "; errno: " << std::strerror(errno);
+      free(buffer);
+      continue;
+    }
+
+    im.data_ = buffer;
+  }
+  return all_smooth;
 }
 
 /*
