@@ -2,6 +2,7 @@
 #include <array>
 #include <cstdlib>
 #include <filesystem>
+#include <mutex>
 #include <stack>
 #include <utility>
 #include <vector>
@@ -34,6 +35,7 @@ public:
   std::vector<uint64_t> finished_;
   std::vector<uint64_t> failed;
   uint64_t num_free_;
+  std::mutex mtx;
 
   image_files(uint64_t num_files) {
     num_files_ = num_files;

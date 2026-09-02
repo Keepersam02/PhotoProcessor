@@ -15,9 +15,7 @@ struct path_id {
   uint64_t f_id;
 };
 
-std::expected<bool, image_error>
-import_images_uring(file_pool &pool, std::vector<path_id> &f_paths,
-                    image_files &images);
+bool import_images_sys(image_files &images, fs::path error_out);
 
 bool import_images_std(image_files &images, fs::path error_out);
 

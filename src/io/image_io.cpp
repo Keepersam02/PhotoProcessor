@@ -36,17 +36,6 @@ const u_int IO_URING_DEPTH = 16;
 
 namespace fs = std::filesystem;
 
-std::expected<bool, image_error>
-import_images_uring(file_pool &pool, image_files &images,
-                    db_err_queue &error_queue) {
-  if (images.files_ == NULL) {
-    // handle reporting to db return error
-  }
-  for (uint64_t i = 0; i < images.num_files_; i++) {
-    image_file &im = images.files_[i];
-  }
-}
-
 bool import_images_sys(image_files &images, fs::path error_out) {
   std::ofstream o_stream;
   o_stream.open(error_out);
@@ -54,27 +43,35 @@ bool import_images_sys(image_files &images, fs::path error_out) {
     return false;
   }
 
-  if (images == NULL) {
-    o_stream << "image_files reference nullptr" << std::endl;
-    return false;
-  }
   bool all_smooth = true;
   for (uint64_t i = 0; i < images.num_files_; i++) {
     auto &im = images.files_[i];
     int fd = open(im.file_path_.c_str(), O_RDONLY);
 
-    struct stat *statbuf;
-    int ret = fstat(fd, statbuf);
+    struct stat statbuf;
+    int ret = fstat(fd, &statbuf);
     if (ret == -1) {
       all_smooth = false;
       o_stream << "error getting file info, file: " << im.file_path_
                << " , error: " << std::strerror(errno);
+      images.failed.push_back(im.get_id());
       continue;
     }
 
-    void *buf = malloc(static_cast<unsigned>(statbuf->st_size));
-    ssize_t num_read = read(fd, buf, static_cast<unsigned>(statbuf->st_size));
+    void *buf = malloc(static_cast<unsigned>(statbuf.st_size));
+    ssize_t num_read = read(fd, buf, static_cast<unsigned>(statbuf.st_size));
+    if (num_read != 0) {
+      all_smooth = false;
+      o_stream << "did not read to end of file, file: " << im.file_path_
+               << std::endl;
+      images.failed.push_back(im.get_id());
+      free(buf);
+      continue;
+    }
+    im.data_ = buf;
+    images.loaded_.push_back(im.get_id());
   }
+  return all_smooth;
 }
 
 bool import_images_std(image_files &images, fs::path error_out) {
@@ -132,6 +129,7 @@ bool import_images_std(image_files &images, fs::path error_out) {
     }
 
     im.data_ = buffer;
+    images.loaded_.push_back(im.get_id());
   }
   return all_smooth;
 }
@@ -172,28 +170,6 @@ find_files(const fs::path path) {
                       "")};
 }
 
-/*
- * Look through vector of paths and sort unsupported files into rejected file
- * vector to be returned with supported files remaining in the passed vector.
- * Unsupported images are return with a vector of the files and the associated
- * image_error with the reason why.
- * TODO remove jpeg and png non support once supported
- */
-std::expected<std::vector<std::pair<void *, size_t>>, image_error>
-file_loader(std::vector<fs::path> file_paths,
-            std::vector<std::pair<fs::path, image_error>> &failed) {
-  std::vector<std::pair<void *, size_t>> files;
-  for (const auto &path : file_paths) {
-    const auto res = load_file(path);
-    if (!res) {
-      failed.push_back(std::make_pair(path, res.error()));
-      continue;
-    }
-    files.push_back(res.value());
-  }
-  return files;
-}
-
 std::expected<std::pair<void *, size_t>, image_error>
 load_file(const fs::path &file_path) {
   auto f_desc = open(file_path.c_str(), O_RDONLY);
@@ -228,6 +204,27 @@ load_file(const fs::path &file_path) {
   }
   close(f_desc);
   return std::make_pair(data, static_cast<size_t>(sbuf.st_size));
+}
+/*
+ * Look through vector of paths and sort unsupported files into rejected file
+ * vector to be returned with supported files remaining in the passed vector.
+ * Unsupported images are return with a vector of the files and the associated
+ * image_error with the reason why.
+ * TODO remove jpeg and png non support once supported
+ */
+std::expected<std::vector<std::pair<void *, size_t>>, image_error>
+file_loader(std::vector<fs::path> file_paths,
+            std::vector<std::pair<fs::path, image_error>> &failed) {
+  std::vector<std::pair<void *, size_t>> files;
+  for (const auto &path : file_paths) {
+    const auto res = load_file(path);
+    if (!res) {
+      failed.push_back(std::make_pair(path, res.error()));
+      continue;
+    }
+    files.push_back(res.value());
+  }
+  return files;
 }
 
 std::expected<bool, image_error> tiff_exporter(fs::path out_dir, int suffix,
