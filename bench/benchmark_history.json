@@ -1,0 +1,112 @@
+{
+    "io_bench_std_r": [
+        {
+            "timestamp": "2026-09-02T21:00:05.511839",
+            "use_for_graph": false,
+            "metrics": {
+                "cycles": 0,
+                "cache-misses": 327048,
+                "page-faults": 2609,
+                "instructions": 40509716
+            }
+        },
+        {
+            "timestamp": "2026-09-02T21:01:15.702117",
+            "use_for_graph": true,
+            "metrics": {
+                "cycles": 0,
+                "cache-misses": 332664,
+                "page-faults": 2610,
+                "instructions": 40693104
+            }
+        },
+        {
+            "timestamp": "2026-09-02T21:10:34.271835",
+            "use_for_graph": true,
+            "metrics": {
+                "execution_time_ms": 47.54,
+                "cpu-cycles": 37268432,
+                "cache-misses": 311601,
+                "page-faults": 2610,
+                "instructions": 40634879
+            }
+        },
+        {
+            "timestamp": "2026-09-02T21:16:45.155446",
+            "use_for_graph": true,
+            "metrics": {
+                "execution_time_ms": 49.05,
+                "cpu-cycles": 37119597,
+                "cache-misses": 317990,
+                "page-faults": 2611,
+                "instructions": 40419238
+            }
+        },
+        {
+            "timestamp": "2026-09-02T22:06:00.439540",
+            "use_for_graph": false,
+            "metrics": {
+                "execution_time_ms": 51.14,
+                "cpu-cycles": 37011902,
+                "cache-misses": 323521,
+                "page-faults": 2633,
+                "instructions": 41083898
+            }
+        }
+    ],
+    "io_bench_std_t": [
+        {
+            "timestamp": "2026-09-02T21:00:08.948071",
+            "use_for_graph": false,
+            "metrics": {
+                "cycles": 0,
+                "cache-misses": 320101,
+                "page-faults": 2611,
+                "instructions": 40587490
+            }
+        },
+        {
+            "timestamp": "2026-09-02T21:01:19.039806",
+            "use_for_graph": true,
+            "metrics": {
+                "cycles": 0,
+                "cache-misses": 332722,
+                "page-faults": 2615,
+                "instructions": 40529731
+            }
+        },
+        {
+            "timestamp": "2026-09-02T21:10:35.155632",
+            "use_for_graph": true,
+            "metrics": {
+                "execution_time_ms": 55.11,
+                "cpu-cycles": 37314045,
+                "cache-misses": 311138,
+                "page-faults": 2611,
+                "instructions": 40463281
+            }
+        },
+        {
+            "timestamp": "2026-09-02T21:16:45.878529",
+            "use_for_graph": true,
+            "metrics": {
+                "execution_time_ms": 49.57,
+                "cpu-cycles": 37179640,
+                "cache-misses": 327776,
+                "page-faults": 2611,
+                "instructions": 40680362
+            }
+        },
+        {
+            "timestamp": "2026-09-02T22:06:01.142701",
+            "use_for_graph": false,
+            "metrics": {
+                "execution_time_ms": 42.97,
+                "cpu-cycles": 37117210,
+                "cache-misses": 310380,
+                "page-faults": 2630,
+                "instructions": 40627110
+            }
+        }
+    ]
+}

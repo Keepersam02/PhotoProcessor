@@ -68,7 +68,7 @@ bool import_images_sys(image_files &images, fs::path error_out) {
       free(buf);
       continue;
     }
-    im.data_ = buf;
+    images.files_[i] = image_file(im);
     images.loaded_.push_back(im.get_id());
   }
   return all_smooth;
@@ -128,7 +128,7 @@ bool import_images_std(image_files &images, fs::path error_out) {
       continue;
     }
 
-    im.data_ = buffer;
+    images.files_[i] = image_file(im);
     images.loaded_.push_back(im.get_id());
   }
   return all_smooth;

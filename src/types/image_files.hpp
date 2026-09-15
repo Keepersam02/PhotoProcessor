@@ -12,13 +12,12 @@ namespace fs = std::filesystem;
 class image_file {
 public:
   fs::path file_path_;
-  void *data_;
 
   image_file(fs::path file_path, uint64_t id) {
-    file_path_ = file_path;
+    file_path_ = std::move(file_path);
     id_ = id;
-    data_ = NULL;
   }
+  image_file() : id_(0) {}
 
   uint64_t get_id() { return id_; }
 
@@ -35,16 +34,15 @@ public:
   std::vector<uint64_t> finished_;
   std::vector<uint64_t> failed;
   uint64_t num_free_;
-  std::mutex mtx;
 
   image_files(uint64_t num_files) {
     num_files_ = num_files;
-    files_ = static_cast<image_file *>(malloc(sizeof(uint64_t) * num_files));
-
+    files_ = new image_file[num_files];
     not_loaded_.reserve(num_files);
     loaded_.reserve(num_files);
     finished_.reserve(num_files);
 
     num_free_ = 0;
   }
+  ~image_files() { delete files_; }
 };
