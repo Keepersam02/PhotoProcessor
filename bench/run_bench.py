@@ -1,7 +1,7 @@
 import subprocess
 import json
-import os
 import time
+import os
 from datetime import datetime
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -10,10 +10,19 @@ import matplotlib.pyplot as plt
 SCRIPT_DIR = Path(__file__).parent
 BUILD_DIR = SCRIPT_DIR.parent / "build-debug" / "bench"
 HISTORY_FILE = SCRIPT_DIR / "benchmark_history.json"
-PERF_EVENTS = "cpu-cycles,cache-misses,page-faults,instructions"
 
-# Toggle this to True to generate the raw data for Flame Graphs
+# Included task-clock to replace python's time.perf_counter()
+PERF_EVENTS = "task-clock,cpu-cycles,cache-misses,page-faults,instructions"
 GENERATE_FLAME_GRAPH_DATA = True
+
+
+def flush_page_cache():
+    print("    [*] Flushing OS page cache for cold-disk I/O...")
+    # 'sync' ensures pending writes are committed before dropping caches
+    # 'echo 3' drops pagecache, dentries, and inodes
+    subprocess.run(
+        ["sudo", "sh", "-c", "sync; echo 3 > /proc/sys/vm/drop_caches"], check=True
+    )
 
 
 def load_history():
@@ -40,54 +49,74 @@ def find_executables(search_path):
     return executables
 
 
-def run_perf(executable_path):
-    print(f"\n[>] Running benchmark: {executable_path.name} ...")
+def run_perf(executable_path, iterations=5):
+    print(
+        f"\n[>] Running benchmark: {executable_path.name} ({iterations} cold runs)..."
+    )
 
-    temp_csv = SCRIPT_DIR / "temp_perf.csv"
-    cmd = [
-        "perf",
-        "stat",
-        "-x",
-        ",",
-        "-o",
-        str(temp_csv),
-        "-e",
-        PERF_EVENTS,
-        str(executable_path),
-    ]
+    # Initialize dictionary to accumulate metrics across runs
+    total_metrics = {
+        "execution_time_ms": 0.0,
+        "cpu-cycles": 0,
+        "cache-misses": 0,
+        "page-faults": 0,
+        "instructions": 0,
+    }
 
-    # 1. Track precise execution time
-    start_time = time.perf_counter()
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    end_time = time.perf_counter()
+    # Manually loop so we can drop caches between EVERY execution
+    for i in range(iterations):
+        flush_page_cache()
 
-    exec_time_ms = (end_time - start_time) * 1000.0
+        temp_csv = SCRIPT_DIR / "temp_perf.csv"
 
-    if result.stderr.strip():
-        print(f"    [C++ ERROR OUTPUT]:\n{result.stderr.strip()}")
+        # Removed -r flag; running one at a time
+        cmd = [
+            "perf",
+            "stat",
+            "-x",
+            ",",
+            "-o",
+            str(temp_csv),
+            "-e",
+            "cpu-cycles,cache-misses,page-faults,instructions",
+            str(executable_path),
+        ]
 
-    if result.returncode != 0:
-        print(f"    [!] Executable failed with exit code {result.returncode}")
-        return None
+        # Use perf_counter to measure real-world time (including disk wait time)
+        start_time = time.perf_counter()
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        end_time = time.perf_counter()
 
-    metrics = {"execution_time_ms": round(exec_time_ms, 2)}
+        # Accumulate wall-clock time
+        total_metrics["execution_time_ms"] += (end_time - start_time) * 1000.0
 
-    if temp_csv.exists():
-        with open(temp_csv, "r") as f:
-            for line in f:
-                if line and not line.startswith("#"):
-                    parts = line.split(",")
-                    if len(parts) >= 3:
-                        val, event = parts[0], parts[2]
-                        try:
-                            metrics[event] = int(val)
-                        except ValueError:
-                            metrics[event] = 0
-        temp_csv.unlink()
+        if result.returncode != 0:
+            print(f"    [!] Run {i + 1} failed with exit code {result.returncode}")
+            if result.stderr.strip():
+                print(f"    [C++ ERROR OUTPUT]:\n{result.stderr.strip()}")
+            return None
 
-    # 2. Optionally record Flame Graph data
+        if temp_csv.exists():
+            with open(temp_csv, "r") as f:
+                for line in f:
+                    if line and not line.startswith("#"):
+                        parts = line.split(",")
+                        if len(parts) >= 3:
+                            val_str, event = parts[0], parts[2]
+                            try:
+                                total_metrics[event] += int(val_str)
+                            except ValueError:
+                                pass
+            temp_csv.unlink()
+
+    # Average the metrics across all iterations
+    avg_metrics = {k: v / iterations for k, v in total_metrics.items()}
+    avg_metrics["execution_time_ms"] = round(avg_metrics["execution_time_ms"], 2)
+
+    # Optional: Generate Flame Graph (just doing this once is enough)
     if GENERATE_FLAME_GRAPH_DATA:
         print(f"    [*] Recording stack traces for Flame Graph...")
+        flush_page_cache()
         perf_data_path = SCRIPT_DIR / f"{executable_path.name}.perf.data"
         flame_cmd = [
             "perf",
@@ -99,11 +128,10 @@ def run_perf(executable_path):
             str(perf_data_path),
             str(executable_path),
         ]
-        # We don't need the output of this, just let it write the file
         subprocess.run(flame_cmd, capture_output=True)
         print(f"    [+] Saved {perf_data_path.name}")
 
-    return metrics
+    return avg_metrics
 
 
 def generate_graph(
@@ -122,12 +150,10 @@ def generate_graph(
     plt.title(f"Historical Performance: {exe_name} ({metric_to_graph})")
     plt.xlabel("Run Iteration")
 
-    # Clean up the metric name for the Y-axis label
     ylabel = metric_to_graph.replace("-", " ").replace("_", " ").title()
     plt.ylabel(ylabel)
     plt.grid(True)
 
-    # Include the metric name in the file output
     graph_path = SCRIPT_DIR / f"{exe_name}_{metric_to_graph}_history.png"
     plt.savefig(graph_path)
     plt.close()
@@ -146,12 +172,13 @@ def main():
     for exe in executables:
         metrics = run_perf(exe)
         if metrics:
-            print(f"    -> Exec Time: {metrics.get('execution_time_ms', 0)} ms")
+            print(
+                f"    -> Exec Time (Task Clock): {metrics.get('execution_time_ms', 0)} ms"
+            )
             print(f"    -> CPU Cycles: {metrics.get('cpu-cycles', 0):,}")
             print(f"    -> Cache Misses: {metrics.get('cache-misses', 0):,}")
             print(f"    -> Page Faults: {metrics.get('page-faults', 0):,}")
 
-            # Generate the three distinct graphs
             generate_graph(exe.name, history_db, metrics, "execution_time_ms", "red")
             generate_graph(exe.name, history_db, metrics, "cache-misses", "blue")
             generate_graph(exe.name, history_db, metrics, "page-faults", "green")

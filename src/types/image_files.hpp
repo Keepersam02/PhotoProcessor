@@ -44,5 +44,5 @@ public:
 
     num_free_ = 0;
   }
-  ~image_files() { delete files_; }
+  ~image_files() { delete[] files_; }
 };

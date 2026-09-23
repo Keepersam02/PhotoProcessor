@@ -36,7 +36,8 @@ const u_int IO_URING_DEPTH = 16;
 
 namespace fs = std::filesystem;
 
-bool import_images_sys(image_files &images, fs::path error_out) {
+bool import_images_sys(image_files &images, file_pool &pool,
+                       fs::path error_out) {
   std::ofstream o_stream;
   o_stream.open(error_out);
   if (!o_stream.is_open()) {
@@ -58,23 +59,25 @@ bool import_images_sys(image_files &images, fs::path error_out) {
       continue;
     }
 
-    void *buf = malloc(static_cast<unsigned>(statbuf.st_size));
+    void *buf = pool.get_slot();
     ssize_t num_read = read(fd, buf, static_cast<unsigned>(statbuf.st_size));
     if (num_read != 0) {
       all_smooth = false;
       o_stream << "did not read to end of file, file: " << im.file_path_
                << std::endl;
       images.failed.push_back(im.get_id());
-      free(buf);
+      pool.free_slot(buf);
       continue;
     }
     images.files_[i] = image_file(im);
     images.loaded_.push_back(im.get_id());
+    pool.slot_ready(buf);
   }
   return all_smooth;
 }
 
-bool import_images_std(image_files &images, fs::path error_out) {
+bool import_images_std(image_files &images, file_pool &pool,
+                       fs::path error_out) {
   std::ofstream o_stream;
   o_stream.open(error_out);
   if (images.files_ == NULL) {
@@ -92,13 +95,7 @@ bool import_images_std(image_files &images, fs::path error_out) {
     auto file_size = i_stream.tellg();
     i_stream.seekg(std::ios_base::beg);
 
-    auto buffer = malloc(static_cast<size_t>(file_size));
-    if (buffer == NULL) {
-      o_stream << "memory allocation failed, message: " << std::strerror(errno);
-      all_smooth = false;
-      images.failed.push_back(im.get_id());
-      continue;
-    }
+    auto buffer = pool.get_slot();
     i_stream.read(static_cast<char *>(buffer), file_size);
     if (!i_stream) {
       if (i_stream.bad()) {
@@ -115,21 +112,22 @@ bool import_images_std(image_files &images, fs::path error_out) {
       }
       all_smooth = false;
       images.failed.push_back(im.get_id());
-      free(buffer);
+      pool.free_slot(buffer);
       continue;
     }
     if (i_stream.gcount() != file_size) {
       all_smooth = false;
       images.failed.push_back(im.get_id());
+      pool.free_slot(buffer);
       o_stream << "mismatch read and file size; read: " << i_stream.gcount()
                << ", file_size: " << file_size
                << "; errno: " << std::strerror(errno);
-      free(buffer);
       continue;
     }
 
     images.files_[i] = image_file(im);
     images.loaded_.push_back(im.get_id());
+    pool.slot_ready(buffer);
   }
   return all_smooth;
 }

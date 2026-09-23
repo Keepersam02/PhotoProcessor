@@ -1,20 +1,32 @@
 #include "io/image_io.hpp"
 #include <cstdint>
+#include <fcntl.h>
 #include <filesystem>
 #include <iostream>
 #include <ostream>
-#include <system_error>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace fs = std::filesystem;
 
-image_files create_image_files(fs::path test_dir) {
+image_files create_image_files(fs::path test_dir, unsigned &largest_size) {
   fs::directory_entry dir(test_dir);
   if (!dir.is_directory()) {
     std::cerr << "non directory passed to find test files, path: " << dir.path()
               << std::endl;
   }
   uint64_t num_files = 0;
+  largest_size = 0;
   for (const auto &entry : std::filesystem::directory_iterator(test_dir)) {
+    int fd = open(entry.path().c_str(), O_RDONLY);
+    struct stat statbuf;
+    int ret = fstat(fd, &statbuf);
+    if (ret == -1) {
+    }
+    if (largest_size < statbuf.st_size) {
+      largest_size = statbuf.st_size;
+    }
+    close(fd);
     (void)entry;
     num_files++;
   }
@@ -33,14 +45,16 @@ image_files create_image_files(fs::path test_dir) {
 }
 
 int main() {
-  fs::path test_im_dir(
-      "/home/keepersam02/coding_projects/02-personal/PhotoProcessor/test/"
-      "test_images/sample_images/");
+  fs::path test_im_dir = fs::path(TEST_IMAGE_DIR) /
+                         "test/"
+                         "test_images/sample_images/";
 
-  auto ims = create_image_files(test_im_dir);
-  fs::path err_path("/home/keepersam02/coding_projects/02-personal/"
-                    "PhotoProcessor/bench/error.txt");
-  auto res = import_images_std(ims, err_path);
+  unsigned largest_file;
+  auto ims = create_image_files(test_im_dir, largest_file);
+  fs::path err_path = fs::path(TEST_IMAGE_DIR) / "bench/error.txt";
+  size_t pool_size = 16;
+  file_pool pool(largest_file, pool_size);
+  auto res = import_images_std(ims, pool, err_path);
   if (res != true) {
     return -1;
   }
