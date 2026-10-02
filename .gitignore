@@ -1,1 +1,8 @@
 /build/
+/build-debug/
+/node_modules/
+/.cache/
+/test/test_images/
+.nvim.lua
+.gitignore
+.compile_commands.json
