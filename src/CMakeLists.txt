@@ -96,6 +96,7 @@ target_link_libraries(bpp_lib PRIVATE
     ${LibRaw_LIBRARIES}
     ${Exiv2_LIBRARIES} # LibRaw
     OpenSSL::Crypto
+    uring
 )
 
 # Add png library with proper target

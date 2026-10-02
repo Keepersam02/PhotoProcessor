@@ -15,11 +15,11 @@ struct path_id {
   uint64_t f_id;
 };
 
-bool import_images_sys(image_files &images, file_pool &pool,
-                       fs::path error_out);
+bool import_images_uring(image_files &images, file_pool &pool);
 
-bool import_images_std(image_files &images, file_pool &pool,
-                       fs::path error_out);
+bool import_images_sys(image_files &images, file_pool &pool);
+
+bool import_images_std(image_files &images, file_pool &pool);
 
 std::expected<std::vector<fs::path>, image_error>
 find_files(const fs::path path);

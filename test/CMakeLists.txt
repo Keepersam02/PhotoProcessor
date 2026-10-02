@@ -40,6 +40,7 @@ target_link_libraries(bpp_tests PRIVATE
   gmock_main
   ${Exiv2_LIBRARIES}
   OpenSSL::Crypto
+  uring
 )
 
 

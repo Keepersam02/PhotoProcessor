@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 SCRIPT_DIR = Path(__file__).parent
 BUILD_DIR = SCRIPT_DIR.parent / "build-debug" / "bench"
 HISTORY_FILE = SCRIPT_DIR / "benchmark_history.json"
+ERROR_LOG = SCRIPT_DIR / "errors.log"
 
 # Included task-clock to replace python's time.perf_counter()
 PERF_EVENTS = "task-clock,cpu-cycles,cache-misses,page-faults,instructions"
@@ -49,7 +50,7 @@ def find_executables(search_path):
     return executables
 
 
-def run_perf(executable_path, iterations=5):
+def run_perf(executable_path, iterations=1):
     print(
         f"\n[>] Running benchmark: {executable_path.name} ({iterations} cold runs)..."
     )
@@ -94,7 +95,9 @@ def run_perf(executable_path, iterations=5):
             print(f"    [!] Run {i + 1} failed with exit code {result.returncode}")
             if result.stderr.strip():
                 print(f"    [C++ ERROR OUTPUT]:\n{result.stderr.strip()}")
-            return None
+            with open(ERROR_LOG, "a") as log_file:
+                log_file.write(f"Run {i + 1}: {result.stderr.strip()}\n")
+            continue
 
         if temp_csv.exists():
             with open(temp_csv, "r") as f:
