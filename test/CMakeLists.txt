@@ -3,6 +3,7 @@ add_executable(bpp_tests
   ./src_test/image_handle_test/image_handler_test.cpp
   ./io_tests/image_io_test.cpp
   ./src_test/file_pool_test.cpp
+  ./io/image_io_t.cpp
 )
 
 target_compile_options(bpp_tests PRIVATE -g -O0)
@@ -45,3 +46,4 @@ target_link_libraries(bpp_tests PRIVATE
 
 
 target_compile_definitions(bpp_tests PRIVATE TEST_IMAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test_images")
+target_compile_definitions(bpp_tests PRIVATE TEST_IMAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test_images/sample_images")
