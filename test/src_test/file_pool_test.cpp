@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 #include <atomic>
 #include <cmath>
+#include <cstddef>
 #include <linux/sysinfo.h>
 #include <sys/sysinfo.h>
 
@@ -90,9 +91,9 @@ TEST(pool_test, single_th) {
 
 TEST(pool_test, multi_th) {
   const int NUM_IMAGES = 10000;
-  const int CAPACITY = 16;
+  const size_t CAPACITY = 16;
 
-  file_pool pool(CAPACITY, sizeof(int));
+  file_pool pool(sizeof(int), CAPACITY);
 
   std::atomic<int> im_produced{0};
   std::atomic<int> im_consumed{0};
@@ -100,10 +101,11 @@ TEST(pool_test, multi_th) {
 
   auto produce = [&]() {
     while (true) {
-      int im_id = im_produced.fetch_add(1);
+      int im_id = im_produced.load();
       if (im_id >= NUM_IMAGES) {
         break;
       }
+      im_produced.fetch_add(1);
 
       void *mem = pool.get_slot();
       *static_cast<int *>(mem) = im_id;
@@ -114,10 +116,11 @@ TEST(pool_test, multi_th) {
 
   auto consume = [&]() {
     while (true) {
-      int task_id = im_consumed.fetch_add(1);
+      int task_id = im_consumed.load();
       if (task_id >= NUM_IMAGES) {
         break;
       }
+      im_consumed.fetch_add(1);
 
       void *mem = pool.get_ready();
 
@@ -139,4 +142,7 @@ TEST(pool_test, multi_th) {
     t.join();
   }
   EXPECT_EQ(val_failures.load(), 0);
+  EXPECT_EQ(im_produced.load(), NUM_IMAGES);
+  EXPECT_EQ(im_consumed.load(), NUM_IMAGES);
+  EXPECT_EQ(im_produced.load(), im_consumed.load());
 }
