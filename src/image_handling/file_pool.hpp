@@ -32,9 +32,11 @@ public:
     int ret = sysinfo(&s_info);
     if (ret != 0) {
     }
-    float max_pool = static_cast<float>(s_info.totalram) * percent_ram;
-    size_t max_elems = static_cast<size_t>(std::lround(max_pool)) / elem_size;
-    size_t pool_size = max_elems * elem_size;
+    float max_pool =
+        static_cast<float>(s_info.totalram * s_info.mem_unit) * percent_ram;
+    size_t max_elems = static_cast<size_t>(
+        static_cast<size_t>(std::lround(max_pool)) / elem_size_);
+    size_t pool_size = max_elems * elem_size_;
     files = std::make_unique<std::byte[]>(pool_size);
     capacity = max_elems;
     elem_size = elem_size_;

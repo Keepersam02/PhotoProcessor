@@ -1,6 +1,7 @@
 #include "image_handling/file_pool.hpp"
 #include "gtest/gtest.h"
 #include <atomic>
+#include <cmath>
 #include <linux/sysinfo.h>
 #include <sys/sysinfo.h>
 
@@ -25,6 +26,12 @@ TEST(pool_test, init) {
 
   auto sys_info_err = sysinfo(&s_info);
   ASSERT_EQ(sys_info_err, 0);
+
+  auto max_possible_size =
+      static_cast<float>(s_info.totalram * s_info.mem_unit) * perc_ram;
+  auto actual = static_cast<size_t>(std::lround(max_possible_size) / elem_size);
+
+  ASSERT_EQ(actual, pool2.capacity);
 }
 
 TEST(pool_test, get_slot) {}
