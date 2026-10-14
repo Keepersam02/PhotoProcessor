@@ -54,6 +54,38 @@ TEST(pool_test, single_th) {
 
   void *ready = pool.get_ready();
   EXPECT_NE(ready, nullptr);
+
+  void *ready2 = pool.get_ready();
+  EXPECT_NE(ready, nullptr);
+
+  pool.free_slot(ready);
+  pool.free_slot(ready2);
+
+  auto slot = pool.get_slot();
+  pool.slot_ready(slot);
+  auto slot2 = pool.get_slot();
+  pool.slot_ready(slot2);
+
+  for (size_t i = 0; i < 9; i++) {
+    auto red = pool.get_ready();
+    pool.free_slot(red);
+
+    auto slot = pool.get_slot();
+    pool.slot_ready(slot);
+  }
+
+  EXPECT_EQ(0, pool.avail_index.size());
+  EXPECT_EQ(2, pool.ready_index.size());
+
+  slot = pool.get_ready();
+  pool.free_slot(slot);
+  EXPECT_EQ(1, pool.avail_index.size());
+  EXPECT_EQ(1, pool.ready_index.size());
+
+  slot = pool.get_ready();
+  pool.free_slot(slot);
+  EXPECT_EQ(2, pool.avail_index.size());
+  EXPECT_EQ(0, pool.ready_index.size());
 }
 
 TEST(pool_test, multi_th) {

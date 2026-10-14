@@ -19,14 +19,13 @@ private:
   std::condition_variable a_cv;
   std::condition_variable r_cv;
 
+public:
   std::stack<size_t, std::vector<size_t>> avail_index;
   std::stack<size_t, std::vector<size_t>> ready_index;
   std::unique_ptr<std::byte[]> files;
 
   size_t capacity;
   size_t elem_size;
-
-public:
   file_pool(size_t elem_size_, float percent_ram) {
     struct sysinfo s_info;
     int ret = sysinfo(&s_info);
