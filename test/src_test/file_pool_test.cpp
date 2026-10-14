@@ -1,24 +1,38 @@
 #include "image_handling/file_pool.hpp"
 #include "gtest/gtest.h"
 #include <atomic>
+#include <linux/sysinfo.h>
+#include <sys/sysinfo.h>
 
 TEST(pool_test, init) {
   size_t capacity = 5;
   size_t elem_size = sizeof(int);
 
-  file_pool pool(5, elem_size);
+  file_pool pool(elem_size, capacity);
 
-  EXPECT_EQ(pool.capacity_, capacity);
-  EXPECT_EQ(pool.elem_size_, elem_size);
+  EXPECT_EQ(pool.capacity, capacity);
+  EXPECT_EQ(pool.elem_size, elem_size);
 
   EXPECT_EQ(pool.avail_index.size(), 5);
   EXPECT_TRUE(pool.ready_index.empty());
+
+  float perc_ram = .005f;
+  file_pool pool2(elem_size, perc_ram);
+
+  EXPECT_EQ(elem_size, pool2.elem_size);
+
+  struct sysinfo s_info;
+
+  auto sys_info_err = sysinfo(&s_info);
+  ASSERT_EQ(sys_info_err, 0);
 }
+
+TEST(pool_test, get_slot) {}
 
 TEST(pool_test, single_th) {
   size_t capacity = 2;
   size_t elem_size = sizeof(int);
-  file_pool pool(capacity, elem_size);
+  file_pool pool(elem_size, capacity);
 
   auto ptr_1 = pool.get_slot();
   std::byte *b_ptr_1 = static_cast<std::byte *>(ptr_1);

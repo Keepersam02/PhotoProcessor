@@ -23,11 +23,11 @@ private:
   std::stack<size_t, std::vector<size_t>> ready_index;
   std::unique_ptr<std::byte[]> files;
 
-  size_t capacity_;
-  size_t elem_size_;
+  size_t capacity;
+  size_t elem_size;
 
 public:
-  file_pool(size_t elem_size, float percent_ram) {
+  file_pool(size_t elem_size_, float percent_ram) {
     struct sysinfo s_info;
     int ret = sysinfo(&s_info);
     if (ret != 0) {
@@ -36,31 +36,29 @@ public:
     size_t max_elems = static_cast<size_t>(std::lround(max_pool)) / elem_size;
     size_t pool_size = max_elems * elem_size;
     files = std::make_unique<std::byte[]>(pool_size);
-    capacity_ = max_elems;
-    elem_size_ = elem_size;
-    for (size_t i = 0; i < capacity_; i++) {
+    capacity = max_elems;
+    elem_size = elem_size_;
+    for (size_t i = 0; i < capacity; i++) {
       avail_index.push(i);
     }
   }
 
-  file_pool(size_t elem_size, size_t max_pool_size) {
-    capacity_ = max_pool_size / elem_size;
-    size_t pool_remainder = max_pool_size % elem_size;
-    elem_size_ = elem_size;
-    size_t pool_size = max_pool_size - pool_remainder;
-    files = std::make_unique<std::byte[]>(pool_size);
-    for (size_t i = 0; i < capacity_; i++) {
+  file_pool(size_t elem_size_, size_t max_pool_elems) {
+    capacity = max_pool_elems;
+    elem_size = elem_size_;
+    files = std::make_unique<std::byte[]>(elem_size * max_pool_elems);
+    for (size_t i = 0; i < max_pool_elems; i++) {
       avail_index.push(i);
     }
   }
 
   file_pool(files_info f_info, size_t max_pool_size) {
-    capacity_ = max_pool_size / f_info.max_size;
-    elem_size_ = f_info.max_size;
-    size_t pool_remainder = max_pool_size % elem_size_;
+    capacity = max_pool_size / f_info.max_size;
+    elem_size = f_info.max_size;
+    size_t pool_remainder = max_pool_size % elem_size;
     size_t pool_size = max_pool_size - pool_remainder;
     files = std::make_unique<std::byte[]>(pool_size);
-    for (size_t i = 0; i < capacity_; i++) {
+    for (size_t i = 0; i < capacity; i++) {
       avail_index.push(i);
     }
   }
@@ -74,7 +72,7 @@ public:
     const auto index = avail_index.top();
     avail_index.pop();
 
-    void *slot = files.get() + elem_size_ * index;
+    void *slot = files.get() + elem_size * index;
     return slot;
   }
 
@@ -85,7 +83,7 @@ public:
   void slot_ready(void *file) {
     std::byte *file_ptr = static_cast<std::byte *>(file);
     const size_t raw_ptr = static_cast<size_t>(file_ptr - files.get());
-    const size_t index = raw_ptr / elem_size_;
+    const size_t index = raw_ptr / elem_size;
     std::unique_lock<std::mutex> lock(mtx);
     ready_index.push(index);
     r_cv.notify_one();
@@ -100,7 +98,7 @@ public:
     const size_t index = ready_index.top();
     ready_index.pop();
 
-    void *slot = files.get() + elem_size_ * index;
+    void *slot = files.get() + elem_size * index;
     return slot;
   }
 
@@ -111,7 +109,7 @@ public:
   void free_slot(void *file) {
     std::byte *file_ptr = static_cast<std::byte *>(file);
     const size_t raw_ptr = static_cast<size_t>(file_ptr - files.get());
-    const size_t index = raw_ptr / elem_size_;
+    const size_t index = raw_ptr / elem_size;
     std::unique_lock<std::mutex> lock(mtx);
     avail_index.push(index);
     a_cv.notify_one();
