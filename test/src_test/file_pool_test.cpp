@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <linux/sysinfo.h>
 #include <sys/sysinfo.h>
 
@@ -13,7 +14,7 @@ TEST(pool_test, init) {
   file_pool pool(elem_size, capacity);
 
   EXPECT_EQ(pool.capacity, capacity);
-  EXPECT_EQ(pool.elem_size, elem_size);
+  EXPECT_EQ(pool.elem_size, elem_size + sizeof(uint64_t));
 
   EXPECT_EQ(pool.avail_index.size(), 5);
   EXPECT_TRUE(pool.ready_index.empty());
@@ -21,7 +22,7 @@ TEST(pool_test, init) {
   float perc_ram = .005f;
   file_pool pool2(elem_size, perc_ram);
 
-  EXPECT_EQ(elem_size, pool2.elem_size);
+  EXPECT_EQ(elem_size + sizeof(uint64_t), pool2.elem_size);
 
   struct sysinfo s_info;
 
@@ -42,13 +43,13 @@ TEST(pool_test, single_th) {
   size_t elem_size = sizeof(int);
   file_pool pool(elem_size, capacity);
 
-  auto ptr_1 = pool.get_slot();
+  auto ptr_1 = pool.get_slot(0);
   std::byte *b_ptr_1 = static_cast<std::byte *>(ptr_1);
-  auto ptr_2 = pool.get_slot();
+  auto ptr_2 = pool.get_slot(0);
   std::byte *b_ptr_2 = static_cast<std::byte *>(ptr_2);
 
   auto ptr_diff = std::abs(b_ptr_2 - b_ptr_1);
-  EXPECT_EQ(ptr_diff, sizeof(int));
+  EXPECT_EQ(ptr_diff, sizeof(int) + sizeof(uint64_t));
 
   pool.slot_ready(ptr_1);
   pool.slot_ready(ptr_2);
@@ -62,16 +63,16 @@ TEST(pool_test, single_th) {
   pool.free_slot(ready);
   pool.free_slot(ready2);
 
-  auto slot = pool.get_slot();
+  auto slot = pool.get_slot(0);
   pool.slot_ready(slot);
-  auto slot2 = pool.get_slot();
+  auto slot2 = pool.get_slot(0);
   pool.slot_ready(slot2);
 
   for (size_t i = 0; i < 9; i++) {
     auto red = pool.get_ready();
     pool.free_slot(red);
 
-    auto slot = pool.get_slot();
+    auto slot = pool.get_slot(1);
     pool.slot_ready(slot);
   }
 
@@ -107,7 +108,7 @@ TEST(pool_test, multi_th) {
       }
       im_produced.fetch_add(1);
 
-      void *mem = pool.get_slot();
+      void *mem = pool.get_slot(im_id);
       *static_cast<int *>(mem) = im_id;
 
       pool.slot_ready(mem);

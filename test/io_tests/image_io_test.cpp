@@ -1,18 +1,117 @@
-#include "../../src/io/image_io.hpp"
 #include "../../src/io/image_io_error.hpp"
 #include "../../src/io/image_ver.hpp"
+#include "io/image_io.hpp"
 #include "openssl/evp.h"
+#include "types/image_files.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <ios>
+#include <iterator>
+#include <memory>
 #include <tiff.h>
 #include <tiffio.h>
 #include <vector>
 
 namespace fs = std::filesystem;
+
+class image_io_test : public testing::Test {
+protected:
+  size_t largest_im;
+  std::unique_ptr<image_files> images_std;
+  std::unique_ptr<image_files> images_sys;
+  std::unique_ptr<image_files> images_uring;
+
+  void SetUp() {
+    fs::path test_dir = fs::path(TEST_IMAGE_DIR);
+    if (!fs::exists(test_dir)) {
+
+    } else if (!fs::is_directory(test_dir)) {
+    }
+    size_t num_files = std::distance(fs::directory_iterator{test_dir},
+                                     fs::directory_iterator{});
+    images_std = std::make_unique<image_files>(num_files);
+    images_sys = std::make_unique<image_files>(num_files);
+    images_uring = std::make_unique<image_files>(num_files);
+
+    uint64_t i = 0;
+    largest_im = 0;
+    for (const auto file : fs::directory_iterator(test_dir)) {
+      images_std->files[i] = image_file((char *)file.path().c_str(), i);
+      images_sys->files[i] = image_file((char *)file.path().c_str(), i);
+      images_uring->files[i] = image_file((char *)file.path().c_str(), i);
+      if (file.file_size() > largest_im) {
+        largest_im = file.file_size();
+      }
+
+      i++;
+    }
+  }
+};
+
+TEST_F(image_io_test, std) {
+  file_pool pool(largest_im, .1f);
+
+  auto pool_picker = [](image_files &files, file_pool &pool) {
+    while ((files.get_loaded_size() + files.get_failed_size()) !=
+           files.num_files) {
+      void *ready = pool.get_ready();
+      files.ins_loaded(*(uint64_t *)ready);
+      pool.free_slot(ready);
+    }
+  };
+
+  std::thread picker(pool_picker, std::ref(*images_std), std::ref(pool));
+  std::thread importer(import_images_std, std::ref(*images_std),
+                       std::ref(pool));
+
+  picker.join();
+  importer.join();
+}
+
+TEST_F(image_io_test, sys) {
+  file_pool pool(largest_im, .1f);
+
+  auto pool_picker = [](image_files &files, file_pool &pool) {
+    while ((files.get_loaded_size() + files.get_failed_size()) !=
+           files.num_files) {
+      void *ready = pool.get_ready();
+      files.ins_loaded(*(uint64_t *)ready);
+      pool.free_slot(ready);
+    }
+  };
+
+  std::thread picker(pool_picker, std::ref(*images_sys), std::ref(pool));
+  std::thread importer(import_images_sys, std::ref(*images_sys),
+                       std::ref(pool));
+
+  picker.join();
+  importer.join();
+}
+
+TEST_F(image_io_test, uring) {
+  file_pool pool(largest_im, .1f);
+
+  auto pool_picker = [](image_files &files, file_pool &pool) {
+    while ((files.get_loaded_size() + files.get_failed_size()) !=
+           files.num_files) {
+      void *ready = pool.get_ready();
+      files.ins_loaded(*(uint64_t *)ready);
+      pool.free_slot(ready);
+    }
+  };
+
+  std::thread picker(pool_picker, std::ref(*images_uring), std::ref(pool));
+  std::thread importer(import_images_uring, std::ref(*images_uring),
+                       std::ref(pool));
+
+  picker.join();
+  importer.join();
+}
 
 namespace {
 struct test_file {
