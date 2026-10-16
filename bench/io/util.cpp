@@ -34,7 +34,8 @@ std::unique_ptr<image_files> create_image_files(fs::path test_dir,
   uint64_t cur_index = 0;
   for (const auto &dir_entry : std::filesystem::directory_iterator(test_dir)) {
     if (dir_entry.is_regular_file()) {
-      im_files->files[cur_index] = image_file(dir_entry, cur_index);
+      im_files->files[cur_index] =
+          image_file((char *)dir_entry.path().c_str(), cur_index);
       cur_index++;
     } else {
       std::cerr << "entry is not regular file, path: " << dir_entry.path()

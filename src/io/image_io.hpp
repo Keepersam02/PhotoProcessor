@@ -1,6 +1,9 @@
 #include "image_handling/file_pool.hpp"
 #include "image_io_error.hpp"
+#include "types/image.hpp"
 #include "types/image_files.hpp"
+#include "types/image_internal.hpp"
+#include "types/image_types.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <expected>

@@ -1,8 +1,10 @@
 #ifndef IMAGE_FILES
 #define IMAGE_FILES
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <mutex>
 #include <sys/types.h>
@@ -13,12 +15,12 @@ namespace fs = std::filesystem;
 
 class image_file {
 public:
-  fs::path file_path_;
+  char path[500];
   void *file_data;
   int fd;
 
-  image_file(fs::path file_path, uint64_t id) {
-    file_path_ = std::move(file_path);
+  image_file(char *file_path, uint64_t id) {
+    memccpy(path, file_path, '\0', 500);
     id_ = id;
     file_data = nullptr;
   }
@@ -61,6 +63,22 @@ public:
       not_loaded.push_back(i);
     }
   }
+
+  image_files(image_files &im_files) {
+    num_files = im_files.num_files;
+    files = new image_file[num_files];
+    std::memcpy(&files, &im_files.files, sizeof(files) * num_files);
+
+    num_free = im_files.num_free;
+
+    not_loaded = im_files.not_loaded;
+    loaded = im_files.loaded;
+    pre_processed = im_files.pre_processed;
+    processed = im_files.processed;
+    done = im_files.done;
+    failed = im_files.failed;
+  }
+
   ~image_files() { delete[] files; }
 
   uint64_t get_not_loaded() {
@@ -156,6 +174,10 @@ public:
   void ins_failed(uint64_t index) {
     std::unique_lock<std::mutex> lock(failed_lk);
     failed.push_back(index);
+  }
+  size_t get_failed_size() {
+    std::unique_lock<std::mutex> lock(failed_lk);
+    return failed.size();
   }
 };
 
