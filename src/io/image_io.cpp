@@ -1,10 +1,4 @@
-#include "image_handling/file_pool.hpp"
-#include "image_io_error.hpp"
-#include "tiff.h"
-#include "types/image.hpp"
-#include "types/image_files.hpp"
-#include "types/image_internal.hpp"
-#include "types/image_types.hpp"
+#include "image_io.hpp"
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
@@ -21,7 +15,6 @@
 #include <ios>
 #include <liburing.h>
 #include <liburing/io_uring.h>
-#include <ostream>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -46,7 +39,7 @@ bool import_images_uring(image_files &images, file_pool &pool) {
   uint64_t num_comp = 0;
   while (num_comp < images.num_files) {
 
-    struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
+    struct io_uring_sqe *sqe;
     while (in_flight < 24 && (sqe = io_uring_get_sqe(&ring)) != nullptr) {
       auto index = images.get_not_loaded();
       if (index == UINT64_MAX) {
@@ -54,14 +47,15 @@ bool import_images_uring(image_files &images, file_pool &pool) {
       }
       auto im = &images.files[index];
       io_uring_sqe_set_data64(sqe, im->get_id());
-      int fd = open(im->file_path_.c_str(), O_RDONLY);
+      int fd = open(im->path, O_RDONLY);
       im->fd = fd;
 
       struct stat sbuf;
       fstat(fd, &sbuf);
 
-      auto slot = pool.get_slot();
+      auto slot = pool.get_slot(im->get_id());
       im->file_data = slot;
+      slot = static_cast<void *>(static_cast<uint64_t *>(slot) + 1);
 
       io_uring_prep_read(sqe, fd, slot, static_cast<unsigned>(sbuf.st_size), 0);
       in_flight++;
@@ -96,7 +90,7 @@ bool import_images_sys(image_files &images, file_pool &pool) {
   auto index = images.get_not_loaded();
   while ((index = images.get_not_loaded()) != 0) {
     auto im = &images.files[index];
-    int fd = open(im->file_path_.c_str(), O_RDONLY);
+    int fd = open(im->path, O_RDONLY);
 
     struct stat statbuf;
     int ret = fstat(fd, &statbuf);
@@ -106,7 +100,9 @@ bool import_images_sys(image_files &images, file_pool &pool) {
       continue;
     }
 
-    void *buf = pool.get_slot();
+    void *buf = pool.get_slot(im->get_id());
+    buf = static_cast<void *>(static_cast<uint64_t *>(buf) + 1);
+
     ssize_t num_read = read(fd, buf, static_cast<unsigned>(statbuf.st_size));
     if (num_read != statbuf.st_size) {
       all_smooth = false;
@@ -129,12 +125,13 @@ bool import_images_std(image_files &images, file_pool &pool) {
     std::ifstream i_stream;
     auto &im = images.files[index];
 
-    i_stream.open(im.file_path_, std::ios_base::binary | std::ios_base::in);
+    i_stream.open(im.path, std::ios_base::binary | std::ios_base::in);
     i_stream.seekg(std::ios_base::end);
     auto file_size = i_stream.tellg();
     i_stream.seekg(std::ios_base::beg);
 
-    auto buffer = pool.get_slot();
+    auto buffer = pool.get_slot(im.get_id());
+    buffer = static_cast<void *>(static_cast<uint64_t *>(buffer) + 1);
     i_stream.read(static_cast<char *>(buffer), file_size);
     if (!i_stream) {
       if (i_stream.bad()) {
