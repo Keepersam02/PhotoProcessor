@@ -1,51 +1,49 @@
-
-
+#include "io.hpp"
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
 #include <sched.h>
 #include <sys/wait.h>
 #include <unistd.h>
-int test_1(int i) {
-  for (int k = 0; k < 1000; k++) {
-    i++;
+
+const size_t max_buff_size = 1000000000;
+char file_buff[max_buff_size];
+
+char file_paths[1000][2000];
+
+int main(int argc, char **argv) {
+  if (argc > 2) {
+    exit(-1);
   }
-  return i;
-}
-
-void test_2(int &i) {
-  for (int k = 0; k < 500; k++) {
-    i++;
+  char dir_path[500];
+  if (strlen(argv[1]) > 500) {
+    exit(-1);
   }
-  return;
-}
+  strncpy(dir_path, argv[1], 500);
 
-int main() {
+  size_t index = 0;
 
-  pid_t pid1;
-  pid_t pid2;
-
-  int i = 0;
-  test_1(i);
-  pid1 = fork();
-
-  int k = 0;
-  test_2(k);
-  pid2 = fork();
-
-  int status1;
-  waitpid(pid1, &status1, 0);
-
-  int status2;
-  waitpid(pid2, &status2, 0);
-
-  if (!WIFEXITED(status1)) {
-    return -2;
+  DIR *dir = opendir(dir_path);
+  struct dirent *dir_entry;
+  while ((dir_entry = readdir(dir)) != NULL) {
+    if (dir_entry->d_type != DT_REG) {
+      continue;
+    }
+    char file_path[2000] = {};
+    strncpy(file_path, dir_path, strlen(dir_path));
+    strncat(file_path, "/", 2);
+    strncat(file_path, dir_entry->d_name, 256);
+    strncat(file_paths[index], file_path, 2000);
+    index++;
+    if (index >= 1000) {
+      break;
+    }
   }
-  if (!WIFEXITED(status2)) {
-    return -3;
+
+  for (size_t k = 0; k < index; k++) {
+    printf("%s\n", file_paths[k]);
   }
-  printf("%d\n", i);
-  printf("%d\n", k);
   return 0;
 }
