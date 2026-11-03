@@ -58,6 +58,7 @@ void files_info(const char *dir_path, size_t &max_size, size_t &num_files) {
     if (static_cast<size_t>(f_stat.st_size) > max_size) {
       max_size = static_cast<size_t>(f_stat.st_size);
     }
+    num_files++;
   }
   closedir(dir);
 }
