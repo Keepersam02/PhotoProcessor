@@ -1,17 +1,25 @@
 add_library(bpp_lib
   io/in.cpp
   io/in.hpp
+  proc/proc.cpp
+  proc/proc.hpp
+  types/file_slab.hpp
+  bpp_loop.cpp
+  bpp_loop.hpp
 )
 
 target_compile_options(bpp_lib PRIVATE
-  $<-Wall
-  -Wextra
-  -Wpedantic
-  -g
-  -Wshadow
-  -Wunused
+  $<$<CONFIG:Debug>:
+  -Wall;
+  -Wextra;
+  -Wpedantic;
+  -g;
+  -Wshadow;
+  -Wunused;
   >
 )
+
+target_include_directories(bpp_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package(PkgConfig REQUIRED)
 
