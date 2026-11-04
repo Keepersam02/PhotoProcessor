@@ -15,6 +15,7 @@ target_compile_options(bpp_lib PRIVATE
   -Wextra;
   -Wpedantic;
   -g;
+  -01
   -Wshadow;
   -Wunused;
   >

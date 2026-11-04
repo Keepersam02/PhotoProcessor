@@ -69,8 +69,9 @@ void import_files(const file_exec files[], size_t batch_size, file_slab &slab) {
     int st = fstat(fd, &f_stat);
     char *slot = main_slab + i * slab.slot_size;
     args[i] = {fd, f_stat, slot};
-    t_id[i] = clone(import_file_fd, clone_stacks + stacks_size * i,
-                    CLONE_VM | CLONE_FILES, &args[i]);
+    t_id[i] =
+        clone(import_file_fd, clone_stacks + stacks_size * i + stacks_size,
+              CLONE_VM | CLONE_FILES | SIGCHLD, &args[i]);
   }
 
   for (size_t i = 0; i < batch_size; i++) {
