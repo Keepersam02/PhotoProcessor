@@ -2,6 +2,7 @@
 #include "proc/proc.hpp"
 #include "types/file_slab.hpp"
 #include "types/misc.hpp"
+#include <csignal>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -38,7 +39,6 @@ void setup_paths(const char in_dir_path[500], const char out_dir_path[500],
 
 void execute_set(size_t set_size, file_exec execs[], int pids[],
                  file_slab &slab) {
-  import_files(execs, set_size, slab);
   for (size_t i = 0; i < set_size; i++) {
     file_exec cur = execs[i];
     char *slot = main_slab + i * slab.slot_size;
@@ -69,7 +69,7 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
     fprintf(stderr, "no files found\n");
     return -1;
   }
-  if ((max_file_size * batch_size) > 2000000000) {
+  if ((max_file_size * batch_size * 2) > 2000000000) {
     fprintf(stderr, "files too big\n");
     return -1;
   }
@@ -78,68 +78,74 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
 
   size_t num_proc = 0;
 
-  file_exec files_e[20];
+  file_exec files_e[32];
 
   DIR *dir = opendir(in_dir_path);
   if (dir == NULL) {
     return -1;
   }
   int pids[20];
+  uint8_t to_proc = 0;
+  // setup first set of images to process
+  size_t file_off = batch_size * to_proc;
+  for (size_t i = 0; i < batch_size; i++) {
+    size_t index = i + file_off;
+    dirent *cur = readdir(dir);
+    setup_paths(in_dir_path, out_dir_path, files_e[index], cur);
+
+    int fd = open(files_e[index].in_path, O_RDONLY);
+    if (fd == -1) {
+      continue;
+    }
+    struct stat f_stat;
+    int st = fstat(fd, &f_stat);
+    files_e[index].f_size = static_cast<size_t>(f_stat.st_size);
+  }
+  import_files_arg args;
+  *args.files = files_e;
+  args.batch_size = batch_size;
+  args.slab = slab;
+
+  import_files(&args);
   while (1) {
     if ((num_files - num_proc) == 0) {
       break;
     } else if ((num_files - num_proc) < batch_size) {
       for (size_t i = 0; i < (num_files - num_proc); i++) {
-        dirent *cur = readdir(dir);
-        if (cur == NULL) {
-          continue;
-        }
-        setup_paths(in_dir_path, out_dir_path, files_e[i], cur);
-        int fd = open(files_e[i].in_path, O_RDONLY);
-        if (fd == -1) {
-          continue;
-        }
-        struct stat f_stat;
-        int ret = fstat(fd, &f_stat);
-        if (ret == -1) {
-          close(fd);
-          continue;
-        }
-        files_e[i].f_size = static_cast<size_t>(f_stat.st_size);
-        files_e[i].index = i;
       }
-      execute_set(num_files - num_proc, files_e, pids, slab);
-      num_proc += (num_files - num_proc);
-      continue;
+      break;
     }
 
+    size_t proc_off = batch_size * to_proc;
+    size_t import_off = batch_size * (!to_proc);
     for (size_t i = 0; i < batch_size; i++) {
+      size_t index = i + file_off;
       dirent *cur = readdir(dir);
-      if (cur == NULL) {
-        continue;
-      }
-      while (!strcmp("..", cur->d_name) || !strcmp(".", cur->d_name)) {
-        cur = readdir(dir);
-      }
-      setup_paths(in_dir_path, out_dir_path, files_e[i], cur);
-      int fd = open(files_e[i].in_path, O_RDONLY);
+      setup_paths(in_dir_path, out_dir_path, files_e[index], cur);
+
+      int fd = open(files_e[index].in_path, O_RDONLY);
       if (fd == -1) {
         continue;
       }
       struct stat f_stat;
-      int ret = fstat(fd, &f_stat);
-      if (ret == -1) {
-        close(fd);
-        continue;
-      }
-      files_e[i].f_size = static_cast<size_t>(f_stat.st_size);
-      files_e[i].index = i;
-      close(fd);
+      int st = fstat(fd, &f_stat);
+      files_e[index].f_size = static_cast<size_t>(f_stat.st_size);
     }
-    execute_set(batch_size, files_e, pids, slab);
-    num_proc += batch_size;
-    continue;
-  }
+    import_files_arg args;
+    *args.files = &files_e[import_off];
+    args.batch_size = batch_size;
+    args.slab = slab;
+    char child_stack[2000];
+    // todo find why not work
+    int t_id = clone(import_files, child_stack + 2000,
+                     CLONE_FILES | CLONE_VM | SIGCHLD, &args);
 
+    execute_set(batch_size, &files_e[proc_off], pids, slab);
+
+    int wstat;
+    waitpid(t_id, &wstat, 0);
+
+    to_proc = !to_proc;
+  }
   return 0;
 }
