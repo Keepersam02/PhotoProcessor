@@ -1,8 +1,8 @@
 #include "io/in.hpp"
 #include "proc/proc.hpp"
 #include "types/file_slab.hpp"
+#include "types/misc.hpp"
 #include <cstddef>
-#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
@@ -13,13 +13,6 @@
 #include <unistd.h>
 
 char main_slab[2000000000];
-
-struct file_exec {
-  char in_path[750];
-  char out_path[750];
-  size_t f_size;
-  size_t index;
-};
 
 void change_extension(char path[750], char ext[15]) {
   for (size_t i = strlen(path); i > 0; i--) {
@@ -79,7 +72,8 @@ void execute_set(size_t set_size, file_exec execs[], int pids[],
   }
 }
 
-int bpp_loop(const char in_dir_path[500], const char out_dir_path[500]) {
+int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
+             const size_t batch_size) {
   size_t max_file_size = 0;
   size_t num_files = 0;
 
@@ -88,7 +82,7 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500]) {
     fprintf(stderr, "no files found\n");
     return -1;
   }
-  if ((max_file_size * 2) > 2000000000) {
+  if ((max_file_size * batch_size) > 2000000000) {
     fprintf(stderr, "files too big\n");
     return -1;
   }
@@ -96,15 +90,14 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500]) {
   file_slab slab(max_file_size);
 
   size_t num_proc = 0;
-  const size_t batch_size = 2;
 
-  file_exec files_e[2];
+  file_exec files_e[20];
 
   DIR *dir = opendir(in_dir_path);
   if (dir == NULL) {
     return -1;
   }
-  int pids[2];
+  int pids[20];
   while (1) {
     if ((num_files - num_proc) == 0) {
       break;

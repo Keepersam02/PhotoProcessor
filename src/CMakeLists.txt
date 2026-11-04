@@ -4,6 +4,7 @@ add_library(bpp_lib
   proc/proc.cpp
   proc/proc.hpp
   types/file_slab.hpp
+  types/misc.hpp
   bpp_loop.cpp
   bpp_loop.hpp
 )

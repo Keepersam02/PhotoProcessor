@@ -1,4 +1,6 @@
 
+#pragma once
+#ifndef deb
 
 #include <cstddef>
 #include <cstdint>
@@ -52,3 +54,4 @@ public:
     slot_size = max_file_size + sizeof(size_t) + 750;
   }
 };
+#endif // DEBUG

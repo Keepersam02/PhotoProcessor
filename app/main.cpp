@@ -5,7 +5,7 @@
 #include <fcntl.h>
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
+  if (argc < 3) {
     fprintf(stdout, "Must give directory in and out");
     exit(EXIT_FAILURE);
   }
@@ -30,7 +30,13 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  bpp_loop(argv[1], argv[2]);
+  int batch_size = 2;
+  if (argc == 4) {
+    char *end;
+    batch_size = strtol(argv[3], &end, 10);
+  }
+
+  bpp_loop(argv[1], argv[2], batch_size);
 
   exit(EXIT_SUCCESS);
 }
