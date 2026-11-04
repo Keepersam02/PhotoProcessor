@@ -38,26 +38,13 @@ void setup_paths(const char in_dir_path[500], const char out_dir_path[500],
 
 void execute_set(size_t set_size, file_exec execs[], int pids[],
                  file_slab &slab) {
+  import_files(execs, set_size, slab);
   for (size_t i = 0; i < set_size; i++) {
     file_exec cur = execs[i];
-    int fd = open(cur.in_path, O_RDONLY);
-    if (fd == -1) {
-      continue;
-    }
-    struct stat f_stat;
-    int ret = fstat(fd, &f_stat);
-    if (ret == -1) {
-      continue;
-    }
-    char *slot = main_slab + slab.slot_size * i;
-    ssize_t rd = read(fd, slot, static_cast<size_t>(f_stat.st_size));
-    if (rd != 0 && rd != static_cast<ssize_t>(f_stat.st_size)) {
-      continue;
-    }
-
+    char *slot = main_slab + i * slab.slot_size;
     pids[i] = fork();
     if (pids[i] == 0) {
-      debayer_write(cur.out_path, slot, static_cast<size_t>(f_stat.st_size));
+      debayer_write(cur.out_path, slot, static_cast<size_t>(cur.f_size));
       _exit(0);
     }
   }
