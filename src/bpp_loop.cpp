@@ -21,6 +21,15 @@ struct file_exec {
   size_t index;
 };
 
+void change_extension(char path[750], char ext[15]) {
+  for (size_t i = strlen(path); i > 0; i--) {
+    if (path[i] == '.') {
+      strncpy(&path[i], ext, 15);
+      break;
+    }
+  }
+}
+
 void setup_paths(const char in_dir_path[500], const char out_dir_path[500],
                  file_exec &f_exec, dirent *file) {
   strncpy(f_exec.in_path, in_dir_path, 500);
@@ -29,7 +38,9 @@ void setup_paths(const char in_dir_path[500], const char out_dir_path[500],
 
   strncpy(f_exec.out_path, out_dir_path, 500);
   strcat(f_exec.out_path, "/");
-  strncat(f_exec.out_path, file->d_name, 245);
+  strncat(f_exec.out_path, file->d_name, 240);
+  char ext[15] = ".tiff";
+  change_extension(f_exec.out_path, ext);
 }
 
 void execute_set(size_t set_size, file_exec execs[], int pids[],
