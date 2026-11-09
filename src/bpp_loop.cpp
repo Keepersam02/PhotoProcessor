@@ -5,6 +5,7 @@
 #include <csignal>
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
@@ -14,6 +15,8 @@
 #include <unistd.h>
 
 char main_slab[2000000000];
+
+char io_stack[1024 * 1024];
 
 void change_extension(char path[750], char ext[15]) {
   for (size_t i = strlen(path); i > 0; i--) {
@@ -91,6 +94,10 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
   for (size_t i = 0; i < batch_size; i++) {
     size_t index = i + file_off;
     dirent *cur = readdir(dir);
+    if (cur == NULL) {
+      fprintf(stderr, "invalid dirent\n");
+      continue;
+    }
     setup_paths(in_dir_path, out_dir_path, files_e[index], cur);
 
     int fd = open(files_e[index].in_path, O_RDONLY);
@@ -98,15 +105,16 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
       continue;
     }
     struct stat f_stat;
-    int st = fstat(fd, &f_stat);
+    fstat(fd, &f_stat);
     files_e[index].f_size = static_cast<size_t>(f_stat.st_size);
+    close(fd);
   }
   import_files_arg args;
-  *args.files = files_e;
+  args.files = files_e;
   args.batch_size = batch_size;
-  args.slab = slab;
+  args.slab = &slab;
 
-  import_files(&args);
+  import_files_st(&args);
   while (1) {
     if ((num_files - num_proc) == 0) {
       break;
@@ -121,6 +129,10 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
     for (size_t i = 0; i < batch_size; i++) {
       size_t index = i + file_off;
       dirent *cur = readdir(dir);
+      if (cur == NULL) {
+        fprintf(stderr, "error regarding dirent\n");
+        continue;
+      }
       setup_paths(in_dir_path, out_dir_path, files_e[index], cur);
 
       int fd = open(files_e[index].in_path, O_RDONLY);
@@ -128,16 +140,14 @@ int bpp_loop(const char in_dir_path[500], const char out_dir_path[500],
         continue;
       }
       struct stat f_stat;
-      int st = fstat(fd, &f_stat);
+      fstat(fd, &f_stat);
       files_e[index].f_size = static_cast<size_t>(f_stat.st_size);
+      close(fd);
     }
-    import_files_arg args;
-    *args.files = &files_e[import_off];
+    args.files = &files_e[import_off];
     args.batch_size = batch_size;
-    args.slab = slab;
-    char child_stack[2000];
-    // todo find why not work
-    int t_id = clone(import_files, child_stack + 2000,
+    args.slab = &slab;
+    int t_id = clone(import_files_st, io_stack + 1024 * 1024,
                      CLONE_FILES | CLONE_VM | SIGCHLD, &args);
 
     execute_set(batch_size, &files_e[proc_off], pids, slab);

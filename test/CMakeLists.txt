@@ -9,6 +9,7 @@ target_compile_options(bpp_tests PRIVATE
   -Wextra;
   -Wpedantic;
   -g;
+  -O1
   -Wshadow;
   -Wunused;
   >
