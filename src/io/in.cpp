@@ -20,6 +20,8 @@ char clone_stacks[2000000];
 
 const size_t stacks_size = 8000;
 
+void files_info(const char *dir_path, size_t &max_size, size_t &num_files);
+
 int import_file(const char *file_path, void *data) {
   strncpy(static_cast<char *>(data) + sizeof(size_t), file_path, 749);
 
@@ -38,17 +40,6 @@ int import_file(const char *file_path, void *data) {
   ssize_t byt_read = read(fd, file_load, file_size);
   if (byt_read != 0) {
     return static_cast<int>(byt_read);
-  }
-  return 0;
-}
-
-int import_file_fd(void *arg) {
-  import_fd_args *args = static_cast<import_fd_args *>(arg);
-  ssize_t rd =
-      read(args->fd, args->data, static_cast<size_t>(args->f_stat.st_size));
-  if (rd != args->f_stat.st_size) {
-    return -1;
-    close(args->fd);
   }
   return 0;
 }
@@ -77,30 +68,6 @@ int import_files_st(void *args) {
     }
   }
   return 0;
-}
-
-void import_files_mt(void *arg) {
-  import_files_arg *args = static_cast<import_files_arg *>(arg);
-  int t_id[20];
-  import_fd_args argss[20];
-  for (size_t i = 0; i < args->batch_size; i++) {
-    int fd = open(args->files[i].in_path, O_RDONLY);
-    if (fd == -1) {
-      continue;
-    }
-    struct stat f_stat;
-    fstat(fd, &f_stat);
-    char *slot = main_slab + i * args->slab->slot_size;
-    argss[i] = {fd, f_stat, slot};
-    t_id[i] =
-        clone(import_file_fd, clone_stacks + stacks_size * i + stacks_size,
-              CLONE_VM | CLONE_FILES | SIGCHLD, &args[i]);
-  }
-
-  for (size_t i = 0; i < args->batch_size; i++) {
-    int wstat;
-    wait(&wstat);
-  }
 }
 
 void files_info(const char *dir_path, size_t &max_size, size_t &num_files) {
