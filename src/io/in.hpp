@@ -4,6 +4,17 @@
 
 #include <cstddef>
 
-int import_file(const char *file_path, void *data);
+struct import_file_arg {
+  file_exec *exec;
+  void *data;
+};
+
+struct import_files_arg {
+  file_exec *exec[16];
+};
+
+int import_file(void *arg);
 
 int import_files_st(void *args);
+
+void files_info(const char *dir_path, size_t &max_size, size_t &num_files);
