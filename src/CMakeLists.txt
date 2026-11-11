@@ -7,6 +7,8 @@ add_library(bpp_lib
   types/misc.hpp
   bpp_loop.cpp
   bpp_loop.hpp
+  db/db_manag.cpp
+  db/db_manag.hpp
 )
 
 target_compile_options(bpp_lib PRIVATE
@@ -22,9 +24,11 @@ target_compile_options(bpp_lib PRIVATE
 
 target_include_directories(bpp_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+find_package(SQLite3 REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(LibRaw REQUIRED libraw_r)
 target_include_directories(bpp_lib PRIVATE ${LibRaw_INCLUDE_DIRS})
 
-target_link_libraries(bpp_lib PRIVATE ${LibRaw_LIBRARIES})
+target_link_libraries(bpp_lib PRIVATE ${LibRaw_LIBRARIES} SQLite3::SQLite3)
