@@ -1,18 +1,18 @@
 add_executable(bpp_tests
-  ./io_tests/image_io_test.cpp
+  src/io/in_t.cpp
+  src/bpp_loop_t.cpp
 )
 
-include(FetchContent)
-FetchContent_Declare(
-  GTest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+target_compile_options(bpp_tests PRIVATE
+  $<$<CONFIG:Debug>:
+  -Wall;
+  -Wextra;
+  -Wpedantic;
+  -g;
+  -Wshadow;
+  -Wunused;
+  >
 )
-FetchContent_MakeAvailable(GTest)
+find_package(GTest)
 
-target_link_libraries(bpp_tests PRIVATE
-  bpp_lib
-  gtest
-  gtest_main
-  gmock
-  gmock_main
-)
+target_link_libraries(bpp_tests bpp_lib gtest gtest_main)

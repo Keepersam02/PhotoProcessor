@@ -1,14 +1,13 @@
-add_executable(bpp_app
-  main.cpp
-)
+add_executable(bpp_app main.cpp)
 
 target_compile_options(bpp_app PRIVATE
-  $<$<CONFIG:Debug>:-Wall -Wextra -Werror -Og>
+  $<$<CONFIG:Debug>:
+  -Wall;
+  -Wextra;
+  -Wpedantic;
+  -g;
+  -Wshadow;
+  -Wunused;
+  >
 )
-target_compile_options(bpp_app PRIVATE
-  $<$<CONFIG:Release>:-O3>
-)
-
-target_link_libraries(bpp_app PRIVATE
-  bpp_lib
-)
+target_link_libraries(bpp_app PRIVATE bpp_lib)
