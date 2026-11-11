@@ -6,7 +6,6 @@ target_compile_options(bpp_app PRIVATE
   -Wextra;
   -Wpedantic;
   -g;
-  -O1
   -Wshadow;
   -Wunused;
   >
