@@ -9,10 +9,6 @@ struct import_file_arg {
   void *data;
 };
 
-struct import_files_arg {
-  file_exec *exec[16];
-};
-
 int import_file(void *arg);
 
 int import_files_st(void *args);

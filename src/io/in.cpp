@@ -1,6 +1,5 @@
 #include "in.hpp"
 #include "fcntl.h"
-#include "types/file_slab.hpp"
 #include "types/misc.hpp"
 #include <cerrno>
 #include <cstddef>
@@ -50,10 +49,6 @@ int import_file(void *arg) {
   }
   close(fd);
   return 0;
-}
-
-int import_files_st(void *arg) {
-  import_files_arg *args = static_cast<import_files_arg *>(arg);
 }
 
 void files_info(const char *dir_path, size_t &max_size, size_t &num_files) {
